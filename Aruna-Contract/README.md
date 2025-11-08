@@ -220,15 +220,37 @@ forge script script/DeployAruna.s.sol:VerifyContracts --rpc-url $RPC_URL --priva
 
 ### Testnet Configuration (Base Sepolia)
 
-- **USDC**: `0xd9aAEc86B65D86f6A7B5B1b0c42FFA531770b16F`
-- **Aave Pool**: `0xA238Dd80C259072837bbd5ef41640D49473d9d82`
+**Network Information:**
 - **Chain ID**: 84532
+- **RPC URL**: https://sepolia.base.org
+- **Block Explorer**: https://sepolia.basescan.org
+
+**External Protocols:**
+- **USDC**: `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
+- **Aave v3 Pool**: `0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b`
+- **Aave aUSDC**: `0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB`
+
+**Deployed Aruna Contracts (November 8, 2024):**
+- **ArunaCore**: `0x5ee04F6377e03b47F5e932968e87ad5599664Cf2` ([View on BaseScan](https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2))
+- **AaveVaultAdapter**: `0x8E9F6B3230800B781e461fce5F7F118152FeD969` ([View on BaseScan](https://sepolia.basescan.org/address/0x8E9F6B3230800B781e461fce5F7F118152FeD969))
+- **MorphoVaultAdapter**: `0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d` ([View on BaseScan](https://sepolia.basescan.org/address/0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d))
+- **YieldRouter**: `0x9721ee37de0F289A99f8EA2585293575AE2654CC` ([View on BaseScan](https://sepolia.basescan.org/address/0x9721ee37de0F289A99f8EA2585293575AE2654CC))
+- **OctantDonationModule**: `0xB745282F0FCe7a669F9EbD50B403e895090b1b24` ([View on BaseScan](https://sepolia.basescan.org/address/0xB745282F0FCe7a669F9EbD50B403e895090b1b24))
+- **MockOctantDeposits**: `0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23` (Testnet Only)
+- **MockMetaMorpho**: `0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19` (Testnet Only)
 
 ### Mainnet Configuration (Base)
 
-- **USDC**: `0xd9aAEc86B65D86f6A7B5B1b0c42FFA531770b16F`
-- **Aave Pool**: `0xA238Dd80C259072837bbd5ef41640D49473d9d82`
+**Network Information:**
 - **Chain ID**: 8453
+- **RPC URL**: https://mainnet.base.org
+- **Block Explorer**: https://basescan.org
+
+**External Protocols (Base Mainnet):**
+- **USDC**: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
+- **Aave v3 Pool**: `0x6Ae43d3271ff6888e7Fc43Fd7321a6Df9b3c72f7`
+
+**Note**: Aruna Protocol is currently deployed on Base Sepolia testnet only. Mainnet deployment planned for future release.
 
 ## Security Considerations
 

@@ -37,10 +37,19 @@ export default function LandingHero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Link href="/business">
+            <Link href="/connect">
               <Button size="lg" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white">
-                For Businesses
+                Connect Wallet
                 <ArrowRight size={18} className="ml-2" />
+              </Button>
+            </Link>
+            <Link href="/business">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                For Businesses
               </Button>
             </Link>
             <Link href="/investor">
@@ -50,7 +59,6 @@ export default function LandingHero() {
                 className="w-full sm:w-auto border-pink-300 text-pink-600 hover:bg-pink-50 dark:border-pink-700 dark:text-pink-400 dark:hover:bg-pink-900/20 bg-transparent"
               >
                 For Investors
-                <ArrowRight size={18} className="ml-2" />
               </Button>
             </Link>
           </div>

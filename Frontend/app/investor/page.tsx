@@ -4,11 +4,12 @@ import { useState } from "react"
 import Navigation from "@/components/navigation"
 import InvestorDashboard from "@/components/investor-dashboard"
 import VaultDeposit from "@/components/vault-deposit"
+import VaultWithdraw from "@/components/vault-withdraw"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, ArrowDownToLine } from "lucide-react"
 
 export default function InvestorPage() {
-  const [showDeposit, setShowDeposit] = useState(false)
+  const [view, setView] = useState<"dashboard" | "deposit" | "withdraw">("dashboard")
 
   return (
     <main className="min-h-screen bg-background">
@@ -20,21 +21,38 @@ export default function InvestorPage() {
           <p className="text-muted-foreground">Earn yield while funding public goods</p>
         </div>
 
-        {!showDeposit ? (
+        {view === "dashboard" && (
           <div className="space-y-6">
-            <Button onClick={() => setShowDeposit(true)} className="bg-pink-600 hover:bg-pink-700 text-white" size="lg">
-              <Plus size={20} className="mr-2" />
-              Deposit to Vault
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={() => setView("deposit")} className="bg-pink-600 hover:bg-pink-700 text-white" size="lg">
+                <Plus size={20} className="mr-2" />
+                Deposit to Vault
+              </Button>
+              <Button onClick={() => setView("withdraw")} variant="outline" size="lg">
+                <ArrowDownToLine size={20} className="mr-2" />
+                Withdraw
+              </Button>
+            </div>
 
-            <InvestorDashboard />
+            <InvestorDashboard onManageClick={(vault) => setView("withdraw")} />
           </div>
-        ) : (
+        )}
+
+        {view === "deposit" && (
           <div className="space-y-6">
-            <Button onClick={() => setShowDeposit(false)} variant="outline">
+            <Button onClick={() => setView("dashboard")} variant="outline">
               Back to Dashboard
             </Button>
-            <VaultDeposit />
+            <VaultDeposit onSuccess={() => setView("dashboard")} />
+          </div>
+        )}
+
+        {view === "withdraw" && (
+          <div className="space-y-6">
+            <Button onClick={() => setView("dashboard")} variant="outline">
+              Back to Dashboard
+            </Button>
+            <VaultWithdraw onSuccess={() => setView("dashboard")} />
           </div>
         )}
       </div>

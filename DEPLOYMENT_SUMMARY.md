@@ -1,13 +1,14 @@
 # Aruna Protocol - Base Sepolia Deployment Summary
 
 ## Deployment Date
-November 7, 2025 (22:56 WIB)
+**November 8, 2024** - Successfully Deployed & Verified ✅
 
 ## Network Information
 - **Network**: Base Sepolia Testnet
 - **Chain ID**: 84532
 - **RPC URL**: https://sepolia.base.org
 - **Block Explorer**: https://sepolia.basescan.org
+- **Deployer Wallet**: 0x77c4a1cD22005b67Eb9CcEaE7E9577188d7Bca82
 
 ## Deployed Contract Addresses
 
@@ -229,16 +230,38 @@ All deployment artifacts are saved in:
 - **ABIs**: `Aruna-Contract/abis/` and `Frontend/lib/abis/`
 - **Build artifacts**: `Aruna-Contract/out/`
 
+## Deployment Verification
+
+All contracts have been verified on-chain:
+
+**Transaction Hashes:**
+- MockOctantDeposits: `0x91f215d5e3f5868e5983de60e652023f72d487b27aa1dcba431b2f54e811bf68`
+- OctantDonationModule: `0x7ff1f3c7eb9dd2eecf435c48879c8dafd11975079230e5de4c6721871f0f56c5`
+- YieldRouter: `0x7e7b0071b9fd12ad3625c8ef1292855c8c8ca5177cdaa8357946b129dbc4edf6`
+- AaveVaultAdapter: `0xf7d4f554bd735a80846e97f361002cc79059ee6cdab149796d25fdc88fa73dc8`
+- MockMetaMorpho: `0x49fb31a2b02b19f097b4aff7d77dbd5b83970133509068ffb4a604de71e4ad41`
+
+**Verification Commands:**
+```bash
+# Verify bytecode on-chain
+cast code 0x5ee04F6377e03b47F5e932968e87ad5599664Cf2 --rpc-url https://sepolia.base.org
+
+# Verify owner
+cast call 0x5ee04F6377e03b47F5e932968e87ad5599664Cf2 "owner()" --rpc-url https://sepolia.base.org
+# Returns: 0x00000000000000000000000077c4a1cd22005b67eb9cceae7e9577188d7bca82 ✅
+```
+
 ## Next Steps
 
 1. ✅ Contracts deployed to Base Sepolia
 2. ✅ ABIs generated and copied to Frontend
 3. ✅ Deployment addresses saved
-4. ⏳ Update Frontend contract addresses
-5. ⏳ Test invoice submission flow
-6. ⏳ Test vault deposit/withdraw
-7. ⏳ Test yield distribution
-8. ⏳ Verify contracts on BaseScan (optional but recommended)
+4. ✅ Frontend contract addresses updated
+5. ✅ All addresses verified on-chain
+6. ⏳ Test invoice submission flow
+7. ⏳ Test vault deposit/withdraw
+8. ⏳ Test yield distribution
+9. ⏳ Verify contracts on BaseScan (optional but recommended)
 
 ## Contract Verification Command
 
@@ -274,6 +297,29 @@ forge verify-contract \
 
 ---
 
-**Deployment Status**: ✅ SUCCESSFUL
+**Deployment Status**: ✅ SUCCESSFUL & VERIFIED
+
+**Deployed On**: November 8, 2024
 
 **Ready for**: Frontend Integration & Testing
+
+**Gas Used**: ~14.9M gas (~0.015 ETH on Base Sepolia)
+
+---
+
+## Quick Reference
+
+**Main Entry Point**: [ArunaCore on BaseScan](https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2)
+
+**All Contract Addresses**:
+```json
+{
+  "ArunaCore": "0x5ee04F6377e03b47F5e932968e87ad5599664Cf2",
+  "AaveVaultAdapter": "0x8E9F6B3230800B781e461fce5F7F118152FeD969",
+  "MorphoVaultAdapter": "0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d",
+  "YieldRouter": "0x9721ee37de0F289A99f8EA2585293575AE2654CC",
+  "OctantDonationModule": "0xB745282F0FCe7a669F9EbD50B403e895090b1b24",
+  "MockOctantDeposits": "0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23",
+  "MockMetaMorpho": "0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19"
+}
+```

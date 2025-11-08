@@ -2,13 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { submitInvoice, approveUSDC } from "@/lib/web3-utils"
 import { useAccount } from "wagmi"
+import { useApproveUSDC, useSubmitInvoice } from "@/hooks/useContracts"
+import { CONTRACTS } from "@/lib/contracts"
 
 interface InvoiceFormProps {
   onSubmit: (invoice: any) => void
@@ -22,34 +23,24 @@ export default function InvoiceForm({ onSubmit }: InvoiceFormProps) {
     dueDate: "",
     description: "",
   })
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [step, setStep] = useState<"input" | "approve" | "submit">("input")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+  const { approve, isPending: isApproving, isSuccess: isApproved, error: approveError } = useApproveUSDC()
+  const { submit, isPending: isSubmitting, isSuccess: isSubmitted, hash, error: submitError } = useSubmitInvoice()
 
-    try {
-      if (!address) {
-        throw new Error("Please connect your wallet")
-      }
+  // Handle approval completion
+  useEffect(() => {
+    if (isApproved && step === "approve") {
+      setStep("submit")
+    }
+  }, [isApproved, step])
 
+  // Handle submission completion
+  useEffect(() => {
+    if (isSubmitted && hash) {
       const amount = Number.parseFloat(formData.amount)
       const grant = amount * 0.03
-      const collateral = amount * 0.1
-
-      // Approve USDC for collateral
-      await approveUSDC(collateral.toString())
-
-      // Submit invoice to contract
-      const dueDate = Math.floor(new Date(formData.dueDate).getTime() / 1000)
-      const txHash = await submitInvoice(
-        formData.customerName,
-        amount.toString(),
-        dueDate,
-        process.env.NEXT_PUBLIC_Aruna_ADDRESS || "",
-      )
 
       onSubmit({
         id: Date.now().toString(),
@@ -58,16 +49,78 @@ export default function InvoiceForm({ onSubmit }: InvoiceFormProps) {
         grant,
         dueDate: formData.dueDate,
         status: "pending",
-        txHash,
+        txHash: hash,
       })
 
       setFormData({ customerName: "", amount: "", dueDate: "", description: "" })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
-    } finally {
-      setLoading(false)
+      setStep("input")
     }
+  }, [isSubmitted, hash])
+
+  // Handle errors
+  useEffect(() => {
+    if (approveError) {
+      setError(approveError.message)
+      setStep("input")
+    }
+    if (submitError) {
+      setError(submitError.message)
+      setStep("input")
+    }
+  }, [approveError, submitError])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    if (!address) {
+      setError("Please connect your wallet")
+      return
+    }
+
+    // Validate amount
+    const amount = Number.parseFloat(formData.amount)
+    if (isNaN(amount) || amount <= 0) {
+      setError("Please enter a valid amount")
+      return
+    }
+
+    // Validate due date
+    const dueDate = new Date(formData.dueDate)
+    if (isNaN(dueDate.getTime())) {
+      setError("Please enter a valid due date")
+      return
+    }
+
+    // Check if due date is in the future
+    if (dueDate.getTime() <= Date.now()) {
+      setError("Due date must be in the future")
+      return
+    }
+
+    const collateral = amount * 0.1
+
+    // Start approval process
+    setStep("approve")
+    approve(CONTRACTS.ARUNA_CORE.address, collateral.toString())
   }
+
+  // Automatically submit invoice after approval
+  useEffect(() => {
+    if (step === "submit" && !isSubmitting && !isSubmitted && formData.dueDate) {
+      const amount = formData.amount
+      const dueDateTimestamp = Math.floor(new Date(formData.dueDate).getTime() / 1000)
+
+      // Additional safety check
+      if (dueDateTimestamp > 0) {
+        const dueDate = BigInt(dueDateTimestamp)
+        submit(formData.customerName, amount, dueDate)
+      } else {
+        setError("Invalid due date")
+        setStep("input")
+      }
+    }
+  }, [step])
 
   return (
     <Card className="p-6 sm:p-8 max-w-2xl">
@@ -139,9 +192,13 @@ export default function InvoiceForm({ onSubmit }: InvoiceFormProps) {
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
           size="lg"
-          disabled={loading || !address}
+          disabled={isApproving || isSubmitting || !address}
         >
-          {loading ? "Processing..." : "Submit Invoice Commitment"}
+          {step === "approve" && isApproving
+            ? "Approving USDC..."
+            : step === "submit" && isSubmitting
+              ? "Submitting Invoice..."
+              : "Submit Invoice Commitment"}
         </Button>
       </form>
     </Card>

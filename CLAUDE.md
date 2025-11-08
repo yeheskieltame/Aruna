@@ -43,7 +43,7 @@ Traditional invoice financing focuses solely on business liquidity. Aruna redire
 
 - **Framework**: Next.js 16 with App Router
 - **UI Components**: Radix UI primitives with custom styling using shadcn/ui
-- **Web3 Integration**: RainbowKit + Wagmi for wallet connections and blockchain interactions
+- **Web3 Integration**: OnchainKit (Base) + Wagmi for wallet connections and blockchain interactions
 - **State Management**: React Query (TanStack Query) for server state
 - **Styling**: Tailwind CSS v4 with custom animations and responsive design
 - **Charts**: Recharts for data visualization
@@ -157,15 +157,34 @@ cast call <contract> "functionName()" --rpc-url https://sepolia.base.org
 - RPC URL: https://sepolia.base.org
 - Block Explorer: https://sepolia.basescan.org
 
-**Known Contract Addresses:**
+**Base Sepolia Infrastructure (External Protocols):**
 ```typescript
 USDC: "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 AAVE_POOL: "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b"
 AAVE_AUSDC: "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB"
 ```
 
-**Deployed Contract Addresses:**
-After deployment, addresses are saved to `Aruna-Contract/deployments/84532.json`
+**Deployed Aruna Protocol Contracts (Base Sepolia):**
+Deployment Date: November 8, 2024
+Deployer: `0x77c4a1cD22005b67Eb9CcEaE7E9577188d7Bca82`
+
+```typescript
+ArunaCore: "0x5ee04F6377e03b47F5e932968e87ad5599664Cf2"
+AaveVaultAdapter: "0x8E9F6B3230800B781e461fce5F7F118152FeD969"
+MorphoVaultAdapter: "0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d"
+YieldRouter: "0x9721ee37de0F289A99f8EA2585293575AE2654CC"
+OctantDonationModule: "0xB745282F0FCe7a669F9EbD50B403e895090b1b24"
+MockOctantDeposits: "0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23" // Testnet Only
+MockMetaMorpho: "0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19" // Testnet Only
+```
+
+All addresses are saved to `Aruna-Contract/deployments/84532.json` and verified on-chain.
+
+**View on BaseScan:**
+- [ArunaCore](https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2)
+- [AaveVaultAdapter](https://sepolia.basescan.org/address/0x8E9F6B3230800B781e461fce5F7F118152FeD969)
+- [MorphoVaultAdapter](https://sepolia.basescan.org/address/0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d)
+- [YieldRouter](https://sepolia.basescan.org/address/0x9721ee37de0F289A99f8EA2585293575AE2654CC)
 
 ## Protocol Configuration
 
@@ -286,8 +305,16 @@ Both `AaveVaultAdapter` and `MorphoVaultAdapter` implement:
 **Frontend** - Create `.env.local`:
 ```bash
 NEXT_PUBLIC_BASE_SEPOLIA_RPC=https://sepolia.base.org
-NEXT_PUBLIC_Aruna_ADDRESS=<deployed_contract_address>
 NEXT_PUBLIC_CHAIN_ID=84532
+NEXT_PUBLIC_ONCHAINKIT_API_KEY=<your_onchainkit_api_key>
+
+# Deployed Contract Addresses (Base Sepolia - Chain ID: 84532)
+# Deployed: 2024-11-08
+NEXT_PUBLIC_ARUNA_CORE=0x5ee04F6377e03b47F5e932968e87ad5599664Cf2
+NEXT_PUBLIC_AAVE_VAULT=0x8E9F6B3230800B781e461fce5F7F118152FeD969
+NEXT_PUBLIC_MORPHO_VAULT=0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d
+NEXT_PUBLIC_YIELD_ROUTER=0x9721ee37de0F289A99f8EA2585293575AE2654CC
+NEXT_PUBLIC_OCTANT_MODULE=0xB745282F0FCe7a669F9EbD50B403e895090b1b24
 ```
 
 **Smart Contracts** - Create `.env` in Aruna-Contract/:

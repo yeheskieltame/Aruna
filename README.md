@@ -102,12 +102,20 @@ For detailed technical implementation:
 - React 19
 - TypeScript
 - Tailwind CSS v4
-- RainbowKit + Wagmi for Web3 connectivity
+- OnchainKit (Base) + Wagmi for Web3 connectivity
 - Recharts for data visualization
+- shadcn/ui components with Radix UI
 
 **Network:**
 - Base Sepolia (Testnet)
 - Chain ID: 84532
+
+**Deployed Contracts (Base Sepolia):**
+- ArunaCore: `0x5ee04F6377e03b47F5e932968e87ad5599664Cf2`
+- AaveVaultAdapter: `0x8E9F6B3230800B781e461fce5F7F118152FeD969`
+- MorphoVaultAdapter: `0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d`
+- YieldRouter: `0x9721ee37de0F289A99f8EA2585293575AE2654CC`
+- OctantDonationModule: `0xB745282F0FCe7a669F9EbD50B403e895090b1b24`
 
 ## Quick Start
 
@@ -167,8 +175,15 @@ BASESCAN_API_KEY=<basescan_api_key>
 **Frontend (.env.local):**
 ```bash
 NEXT_PUBLIC_BASE_SEPOLIA_RPC=https://sepolia.base.org
-NEXT_PUBLIC_Aruna_ADDRESS=<deployed_contract_address>
 NEXT_PUBLIC_CHAIN_ID=84532
+NEXT_PUBLIC_ONCHAINKIT_API_KEY=<your_onchainkit_api_key>
+
+# Deployed Contract Addresses
+NEXT_PUBLIC_ARUNA_CORE=0x5ee04F6377e03b47F5e932968e87ad5599664Cf2
+NEXT_PUBLIC_AAVE_VAULT=0x8E9F6B3230800B781e461fce5F7F118152FeD969
+NEXT_PUBLIC_MORPHO_VAULT=0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d
+NEXT_PUBLIC_YIELD_ROUTER=0x9721ee37de0F289A99f8EA2585293575AE2654CC
+NEXT_PUBLIC_OCTANT_MODULE=0xB745282F0FCe7a669F9EbD50B403e895090b1b24
 ```
 
 ### Base Sepolia Addresses

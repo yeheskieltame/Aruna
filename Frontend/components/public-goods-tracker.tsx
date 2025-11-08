@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { Heart, TrendingUp, Users } from "lucide-react"
+import { useAccount } from "wagmi"
+import { useTotalDonations, useBusinessContribution, formatUSDC } from "@/hooks/useContracts"
 
 const projectsData = [
   {
@@ -72,7 +74,16 @@ const categoryData = [
 const COLORS = ["#3b82f6", "#ec4899", "#06b6d4", "#f59e0b"]
 
 export default function PublicGoodsTracker() {
-  const totalFunded = projectsData.reduce((sum, p) => sum + p.funded, 0)
+  const { address } = useAccount()
+
+  // Fetch total donations from blockchain
+  const { data: totalDonationsData } = useTotalDonations()
+  const { data: businessContributionData } = useBusinessContribution(address)
+
+  // Format the data
+  const totalFunded = totalDonationsData ? Number(formatUSDC(totalDonationsData as bigint)) : 0
+  const yourContribution = businessContributionData ? Number(formatUSDC(businessContributionData as bigint)) : 0
+
   const totalDonations = monthlyData.reduce((sum, m) => sum + m.amount, 0)
 
   return (
@@ -94,8 +105,8 @@ export default function PublicGoodsTracker() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Projects Supported</p>
-              <p className="text-2xl sm:text-3xl font-bold">{projectsData.length}</p>
+              <p className="text-sm text-muted-foreground mb-1">Your Contribution</p>
+              <p className="text-2xl sm:text-3xl font-bold">${yourContribution.toFixed(2)}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
               <Users size={24} className="text-blue-600" />
@@ -106,8 +117,8 @@ export default function PublicGoodsTracker() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Monthly Growth</p>
-              <p className="text-2xl sm:text-3xl font-bold">+200%</p>
+              <p className="text-sm text-muted-foreground mb-1">Projects Supported</p>
+              <p className="text-2xl sm:text-3xl font-bold">{projectsData.length}</p>
             </div>
             <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
               <TrendingUp size={24} className="text-pink-600" />

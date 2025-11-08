@@ -9,10 +9,9 @@ import { Plus } from "lucide-react"
 
 export default function BusinessPage() {
   const [showForm, setShowForm] = useState(false)
-  const [invoices, setInvoices] = useState([])
 
-  const handleAddInvoice = (invoice: any) => {
-    setInvoices([...invoices, invoice])
+  const handleInvoiceSubmitted = () => {
+    // Close form after successful submission
     setShowForm(false)
   }
 
@@ -33,14 +32,14 @@ export default function BusinessPage() {
               Submit New Invoice
             </Button>
 
-            <BusinessDashboard invoices={invoices} />
+            <BusinessDashboard />
           </div>
         ) : (
           <div className="space-y-6">
             <Button onClick={() => setShowForm(false)} variant="outline">
               Back to Dashboard
             </Button>
-            <InvoiceForm onSubmit={handleAddInvoice} />
+            <InvoiceForm onSubmit={handleInvoiceSubmitted} />
           </div>
         )}
       </div>
