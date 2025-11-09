@@ -14,20 +14,71 @@ The `AaveVaultAdapter` is an ERC-4626 compliant vault that wraps Aave v3 lending
 
 The adapter follows the ERC-4626 tokenized vault standard, providing a normalized interface for Aave v3 deposits:
 
-```
-User (USDC) → AaveVaultAdapter → Aave v3 Pool → aUSDC (yield-bearing)
-                     ↓
-                Mints shares (yfAave tokens)
-                     ↓
-                Tracks in YieldRouter
+```mermaid
+graph LR
+    U[User with USDC] -->|deposit| AVA[AaveVaultAdapter]
+    AVA -->|supply| AP[Aave v3 Pool]
+    AP -.->|mint aUSDC| AVA
+    AVA -.->|mint yfAave shares| U
+    AVA -->|track shares| YR[YieldRouter]
+
+    classDef userClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef vaultClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
+    classDef protocolClass fill:#10B981,stroke:#047857,color:#fff
+    classDef routerClass fill:#EC4899,stroke:#BE185D,color:#fff
+
+    class U userClass
+    class AVA vaultClass
+    class AP protocolClass
+    class YR routerClass
 ```
 
 ### Contract Hierarchy
 
-```solidity
-AaveVaultAdapter is ERC4626, Ownable, ReentrancyGuard, IYieldVault
+```mermaid
+classDiagram
+    class ERC4626 {
+        <<OpenZeppelin>>
+        +deposit(assets, receiver)
+        +withdraw(assets, receiver, owner)
+        +totalAssets()
+        +convertToShares(assets)
+    }
+
+    class Ownable {
+        <<OpenZeppelin>>
+        +owner()
+        +transferOwnership(newOwner)
+        +onlyOwner modifier
+    }
+
+    class ReentrancyGuard {
+        <<OpenZeppelin>>
+        +nonReentrant modifier
+    }
+
+    class IYieldVault {
+        <<Custom Interface>>
+        +harvestYield()
+        +getYieldRouter()
+    }
+
+    class AaveVaultAdapter {
+        +IPool aavePool
+        +IERC20 aToken
+        +deposit(assets, receiver)
+        +withdraw(assets, receiver, owner)
+        +harvestYield()
+        +totalAssets()
+    }
+
+    ERC4626 <|-- AaveVaultAdapter
+    Ownable <|-- AaveVaultAdapter
+    ReentrancyGuard <|-- AaveVaultAdapter
+    IYieldVault <|-- AaveVaultAdapter
 ```
 
+**Inheritance Benefits:**
 - **ERC4626**: Standard vault interface from OpenZeppelin
 - **Ownable**: Access control for admin functions
 - **ReentrancyGuard**: Protection against reentrancy attacks
@@ -165,34 +216,106 @@ After 30 days at 6.5% APY:
 
 **Deposit Process:**
 
-1. User approves USDC to adapter
-2. Adapter transfers USDC from user via `safeTransferFrom`
-3. Adapter calls `aavePool.supply()` with assets
-4. Aave mints aTokens to adapter
-5. Adapter mints vault shares to user
-6. YieldRouter updates user's share balance
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant AVA as AaveVaultAdapter
+    participant USDC as USDC Token
+    participant AP as Aave Pool
+    participant aUSDC as aUSDC Token
+    participant YR as YieldRouter
+
+    U->>USDC: approve(AVA, amount)
+    U->>AVA: deposit(1000 USDC, user)
+    AVA->>USDC: safeTransferFrom(user, AVA, 1000)
+    AVA->>USDC: approve(AavePool, 1000)
+    AVA->>AP: supply(USDC, 1000, AVA, 0)
+    AP->>aUSDC: mint(1000 aUSDC to AVA)
+    AVA->>AVA: _mint(1000 shares to user)
+    AVA->>YR: updateUserShares(user, +1000)
+    AVA-->>U: return 1000 shares
+
+    Note over U: User now has 1000 yfAave shares
+    Note over AVA: Adapter holds 1000 aUSDC (earning yield)
+```
 
 **Withdrawal Process:**
 
-1. User calls `withdraw()` or `redeem()`
-2. Adapter calculates shares to burn using `previewWithdraw()`
-3. Adapter calls `aavePool.withdraw()` for assets
-4. Aave burns adapter's aTokens
-5. Adapter burns user's vault shares
-6. Adapter transfers USDC to user
-7. YieldRouter updates user's share balance
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant AVA as AaveVaultAdapter
+    participant AP as Aave Pool
+    participant aUSDC as aUSDC Token
+    participant USDC as USDC Token
+    participant YR as YieldRouter
+
+    U->>AVA: withdraw(500 USDC, user, user)
+    AVA->>AVA: previewWithdraw(500) → 500 shares
+    AVA->>AVA: _burn(500 shares from user)
+    AVA->>AP: withdraw(USDC, 500, user)
+    AP->>aUSDC: burn(500 aUSDC from AVA)
+    AP->>USDC: transfer(500 USDC to user)
+    AVA->>YR: updateUserShares(user, -500)
+    AVA-->>U: return 500 shares burned
+
+    Note over U: User received 500 USDC
+    Note over AVA: Adapter now holds 500 aUSDC
+```
 
 **Yield Harvest Process:**
 
-1. **Investor calls `harvestYield()` from frontend** (after 1 day interval minimum)
-2. Adapter calculates yield as `aToken balance - totalSupply`
-3. Adapter withdraws yield from Aave via `aavePool.withdraw()`
-4. Adapter approves YieldRouter to spend yield
-5. YieldRouter automatically distributes:
-   - 70% → investors (proportional to vault shares)
-   - 25% → public goods via OctantDonationModule
-   - 5% → protocol treasury
-6. Adapter updates `lastHarvestTime` and `totalYieldGenerated`
+```mermaid
+sequenceDiagram
+    participant U as Investor
+    participant UI as Frontend
+    participant AVA as AaveVaultAdapter
+    participant aUSDC as aUSDC Token
+    participant AP as Aave Pool
+    participant YR as YieldRouter
+    participant ODM as OctantDonationModule
+    participant USDC as USDC Token
+
+    Note over U,UI: Investor clicks "Harvest Yield" button
+
+    U->>UI: Click Harvest
+    UI->>AVA: harvestYield()
+
+    Note over AVA: Check 24h interval passed
+    AVA->>AVA: require(block.timestamp >= lastHarvestTime + 1 day)
+
+    Note over AVA: Calculate yield
+    AVA->>aUSDC: balanceOf(AVA) → 1050 aUSDC
+    AVA->>AVA: totalSupply() → 1000 shares
+    AVA->>AVA: yield = 1050 - 1000 = 50 USDC
+
+    Note over AVA: Withdraw yield from Aave
+    AVA->>AP: withdraw(USDC, 50, AVA)
+    AP->>aUSDC: burn(50 aUSDC from AVA)
+    AP->>USDC: transfer(50 USDC to AVA)
+
+    Note over AVA: Approve and distribute
+    AVA->>USDC: approve(YieldRouter, 50)
+    AVA->>YR: distributeYield(50)
+
+    Note over YR: 70/25/5 Distribution
+    YR->>YR: investorAmount = 50 * 70% = 35
+    YR->>YR: publicGoodsAmount = 50 * 25% = 12.5
+    YR->>YR: protocolAmount = 50 * 5% = 2.5
+
+    YR->>USDC: transfer(35 to investors)
+    YR->>ODM: donate(12.5, contributor)
+    YR->>USDC: transfer(2.5 to treasury)
+
+    AVA->>AVA: lastHarvestTime = block.timestamp
+    AVA->>AVA: totalYieldGenerated += 50
+
+    AVA-->>UI: HarvestCompleted event
+    UI-->>U: Show success + transaction hash
+
+    Note over U: Earned 35 USDC (70% of 50)
+    Note over ODM: 12.5 USDC donated to public goods
+```
 
 **⚠️ Important**: Yield must be manually harvested via the "Harvest Yield" button in the investor dashboard. Public goods donations only occur AFTER harvest is triggered.
 

@@ -14,11 +14,30 @@ Aruna automatically allocates 25% of all generated yield to public goods project
 
 Every dollar of yield is distributed according to a fixed formula:
 
-```
-Total Yield Generated (100%)
-├─ 70% → Investors (userYieldBalance mapping)
-├─ 25% → Public Goods (OctantDonationModule)
-└─ 5% → Protocol Treasury
+```mermaid
+graph LR
+    TY[Total Yield<br/>100%<br/>$100] --> INV[Investors<br/>70%<br/>$70]
+    TY --> PG[Public Goods<br/>25%<br/>$25]
+    TY --> PROTO[Protocol<br/>5%<br/>$5]
+
+    INV --> I1[Investor 1<br/>proportional to shares]
+    INV --> I2[Investor 2<br/>proportional to shares]
+    INV --> I3[Investor 3<br/>proportional to shares]
+
+    PG --> ODM[OctantDonationModule<br/>tracks donations]
+    ODM --> OCTANT[Octant v2<br/>distributes to projects]
+
+    PROTO --> TREASURY[Protocol Treasury<br/>maintenance & development]
+
+    classDef yieldClass fill:#F59E0B,stroke:#D97706,color:#fff
+    classDef investorClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef pgClass fill:#10B981,stroke:#047857,color:#fff
+    classDef protocolClass fill:#EC4899,stroke:#BE185D,color:#fff
+
+    class TY yieldClass
+    class INV,I1,I2,I3 investorClass
+    class PG,ODM,OCTANT pgClass
+    class PROTO,TREASURY protocolClass
 ```
 
 This split is hardcoded as constants and cannot be changed:
@@ -28,6 +47,31 @@ uint256 public constant INVESTOR_PERCENTAGE = 7000;     // 70%
 uint256 public constant PUBLIC_GOODS_PERCENTAGE = 2500; // 25%
 uint256 public constant PROTOCOL_FEE_PERCENTAGE = 500;  // 5%
 uint256 public constant BASIS_POINTS = 10000;
+```
+
+### Visual Impact at Scale
+
+```mermaid
+graph TB
+    subgraph TVL Scenario["$10M TVL @ 7.8% APY"]
+        TOTAL[Total Annual Yield<br/>$780,000]
+    end
+
+    TOTAL --> INV[Investors Earn<br/>$546,000<br/>5.46% effective APY]
+    TOTAL --> PG[Public Goods Receive<br/>$195,000/year<br/>sustainable funding]
+    TOTAL --> PROTO[Protocol Sustainability<br/>$39,000/year<br/>maintenance & ops]
+
+    PG --> PROJECTS[Funds distributed to:<br/>• Ethereum Foundation<br/>• Protocol Guild<br/>• Gitcoin<br/>• OpenZeppelin<br/>• And more via Octant]
+
+    classDef tvlClass fill:#F59E0B,stroke:#D97706,color:#fff
+    classDef investorClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef pgClass fill:#10B981,stroke:#047857,color:#fff
+    classDef protocolClass fill:#EC4899,stroke:#BE185D,color:#fff
+
+    class TOTAL tvlClass
+    class INV investorClass
+    class PG,PROJECTS pgClass
+    class PROTO protocolClass
 ```
 
 ### Why 25%?
@@ -46,38 +90,102 @@ Example at $10M TVL with 7.8% APY:
 
 ## Architecture
 
-### Contract Flow
+### Complete Donation Flow
 
+```mermaid
+sequenceDiagram
+    participant I as Investor
+    participant UI as Frontend
+    participant V as Vault<br/>(Aave/Morpho)
+    participant YR as YieldRouter
+    participant ODM as OctantDonationModule
+    participant USDC as USDC Token
+    participant OD as Octant Deposits
+    participant OCTANT as Octant v2
+
+    Note over V: Yield accumulates automatically<br/>in Aave/Morpho protocols
+
+    Note over I,UI: Step 1: Investor Triggers Harvest
+    I->>UI: Click "Harvest Yield" button
+    UI->>V: harvestYield()
+    Note over V: Check 24h interval passed
+
+    V->>V: Calculate yield (50 USDC)
+    V->>YR: distributeYield(50 USDC)
+
+    Note over YR: Step 2: Calculate 70/25/5 Split
+    YR->>YR: investorAmount = 50 * 70% = 35 USDC
+    YR->>YR: publicGoodsAmount = 50 * 25% = 12.5 USDC
+    YR->>YR: protocolAmount = 50 * 5% = 2.5 USDC
+
+    Note over YR,ODM: Step 3: Distribute to Recipients
+    YR->>USDC: transfer(35 to investors)
+    YR->>USDC: transfer(2.5 to treasury)
+    YR->>USDC: approve(ODM, 12.5)
+    YR->>ODM: donate(12.5, business_address)
+
+    Note over ODM: Step 4: Track Donation
+    ODM->>USDC: safeTransferFrom(YR, ODM, 12.5)
+    ODM->>ODM: totalDonated += 12.5
+    ODM->>ODM: currentEpochDonations += 12.5
+    ODM->>ODM: businessContributions[business] += 12.5
+    ODM->>OD: getCurrentEpoch() → epoch 42
+    ODM->>ODM: donationsPerEpoch[42] += 12.5
+    ODM->>ODM: emit DonationMade(42, 12.5, business)
+
+    Note over ODM: Donations accumulate throughout epoch
+
+    Note over ODM,OCTANT: Step 5: Forward to Octant (periodic)
+    Note over ODM: Owner calls forwardToOctant()<br/>once per epoch
+    ODM->>USDC: approve(OctantDeposits, currentEpochDonations)
+    ODM->>OD: lock(currentEpochDonations)
+    OD->>USDC: transferFrom(ODM, OD, amount)
+    OD->>OCTANT: Queue for epoch distribution
+    ODM->>ODM: currentEpochDonations = 0
+    ODM->>ODM: emit EpochFinalized(42, amount)
+
+    Note over OCTANT: Step 6: Octant Distributes
+    OCTANT->>OCTANT: Distribute to approved projects:<br/>• Ethereum Foundation<br/>• Protocol Guild<br/>• Gitcoin, etc.
 ```
-Vaults (Aave/Morpho) accumulate yield automatically
-    ↓
-⚠️ INVESTOR MUST TRIGGER: harvestYield() from frontend ⚠️
-    ├─ Minimum 24-hour interval per vault
-    ├─ Permissionless (anyone can call)
-    └─ Triggers entire distribution flow below
-    ↓
-YieldRouter.distributeYield()
-    ├─ Calculate 70% → investors
-    ├─ Calculate 25% → public goods
-    ├─ Calculate 5% → protocol
-    ├─ Approve OctantDonationModule for 25% amount
-    └─ Call octantModule.donate()
-        ↓
-OctantDonationModule
-    ├─ Transfer tokens from YieldRouter
-    ├─ Update totalDonated
-    ├─ Update currentEpochDonations
-    ├─ Update businessContributions[contributor]
-    ├─ Update donationsPerEpoch[epoch]
-    └─ Emit DonationMade event
-        ↓
-forwardToOctant() (periodic, owner-only)
-    ├─ Batch donations for epoch
-    ├─ Approve Octant Deposits contract
-    └─ Call octantDeposits.lock()
-        ↓
-Octant v2 Ecosystem
-    └─ Distributes to projects via allocation mechanisms
+
+### Tracking Architecture
+
+```mermaid
+graph TB
+    subgraph Donation Tracking
+        TD[totalDonated<br/>Lifetime total]
+        CED[currentEpochDonations<br/>Current epoch buffer]
+        DPE[donationsPerEpoch mapping<br/>Historical by epoch]
+        BC[businessContributions mapping<br/>Attribution per business]
+    end
+
+    subgraph Data Flow
+        HARVEST[Harvest Event] -->|donate| TD
+        HARVEST -->|donate| CED
+        HARVEST -->|donate| DPE
+        HARVEST -->|donate| BC
+    end
+
+    subgraph Octant Integration
+        CED -->|forwardToOctant| OCTANT[Octant v2 Deposits]
+        OCTANT -->|getCurrentEpoch| DPE
+    end
+
+    subgraph Frontend Display
+        TD -->|read| PG_PAGE[Public Goods Page<br/>Total Impact]
+        DPE -->|read| PG_PAGE
+        BC -->|read| BIZ_DASH[Business Dashboard<br/>Your Contribution]
+    end
+
+    classDef trackingClass fill:#EC4899,stroke:#BE185D,color:#fff
+    classDef flowClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
+    classDef octantClass fill:#10B981,stroke:#047857,color:#fff
+    classDef frontendClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+
+    class TD,CED,DPE,BC trackingClass
+    class HARVEST flowClass
+    class OCTANT octantClass
+    class PG_PAGE,BIZ_DASH frontendClass
 ```
 
 **⚠️ Critical Note**: Public goods donations do NOT happen automatically. Investors must actively click the "Harvest Yield" button in the investor dashboard to trigger the distribution. This is by design to optimize gas costs and batch distributions.

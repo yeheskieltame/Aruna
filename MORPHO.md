@@ -23,42 +23,189 @@ MetaMorpho is Morpho's vault system that sits on top of Morpho Blue, the base le
 
 The adapter wraps MetaMorpho vaults, providing an additional layer of yield distribution logic:
 
+```mermaid
+graph TB
+    U[User with USDC] -->|deposit| MVA[MorphoVaultAdapter]
+    MVA -->|deposit| MM[MetaMorpho Vault]
+    MM -->|allocate capital| MB1[Morpho Blue Market 1]
+    MM -->|allocate capital| MB2[Morpho Blue Market 2]
+    MM -->|allocate capital| MB3[Morpho Blue Market 3]
+
+    MM -.->|mint MetaMorpho shares| MVA
+    MVA -.->|mint yfMorpho shares| U
+    MVA -->|track shares| YR[YieldRouter]
+
+    Note1[Curator manages<br/>capital allocation]
+    Note2[Higher yields from<br/>peer-to-peer markets]
+
+    classDef userClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef vaultClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
+    classDef protocolClass fill:#10B981,stroke:#047857,color:#fff
+    classDef marketClass fill:#F59E0B,stroke:#D97706,color:#fff
+    classDef routerClass fill:#EC4899,stroke:#BE185D,color:#fff
+
+    class U userClass
+    class MVA vaultClass
+    class MM protocolClass
+    class MB1,MB2,MB3 marketClass
+    class YR routerClass
 ```
-User (USDC) → MorphoVaultAdapter → MetaMorpho Vault → Morpho Blue Markets
-                      ↓
-                 Mints shares (yfMorpho tokens)
-                      ↓
-                 Tracks in YieldRouter
+
+### Two-Layer Share System
+
+```mermaid
+graph LR
+    subgraph User Layer
+        U[User]
+        YFS[yfMorpho Shares<br/>1000 shares]
+    end
+
+    subgraph Adapter Layer
+        MVA[MorphoVaultAdapter]
+        MMS[MetaMorpho Shares<br/>950 shares]
+    end
+
+    subgraph Protocol Layer
+        MM[MetaMorpho Vault]
+        ASSETS[Underlying Assets<br/>1,006.71 USDC<br/>after yield]
+    end
+
+    U -->|owns| YFS
+    YFS -.->|tracked by| MVA
+    MVA -->|holds| MMS
+    MMS -.->|redeemable for| ASSETS
+    MM -->|manages| ASSETS
+
+    Note1[Exchange rate:<br/>MetaMorpho shares/USDC<br/>varies with yield]
+    Note2[Exchange rate:<br/>yfMorpho shares/deposits<br/>always 1:1]
+
+    classDef userClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef adapterClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
+    classDef protocolClass fill:#10B981,stroke:#047857,color:#fff
+
+    class U,YFS userClass
+    class MVA,MMS adapterClass
+    class MM,ASSETS protocolClass
 ```
 
 ### Integration Flow
 
+**Deposit Flow:**
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant MVA as MorphoVaultAdapter
+    participant USDC as USDC Token
+    participant MM as MetaMorpho Vault
+    participant YR as YieldRouter
+
+    U->>USDC: approve(MVA, 1000)
+    U->>MVA: deposit(1000 USDC, user)
+
+    MVA->>USDC: safeTransferFrom(user, MVA, 1000)
+    MVA->>USDC: approve(MetaMorpho, 1000)
+
+    MVA->>MM: deposit(1000, MVA)
+    Note over MM: MetaMorpho allocates<br/>to best Morpho Blue markets
+
+    MM-->>MVA: return 950 MetaMorpho shares
+    MVA->>MVA: lastMetaMorphoShares += 950
+
+    MVA->>MVA: _mint(1000 yfMorpho shares to user)
+    MVA->>YR: updateUserShares(user, +1000)
+
+    MVA-->>U: return 1000 shares
+
+    Note over U: User has 1000 yfMorpho shares
+    Note over MVA: Adapter holds 950 MetaMorpho shares
+    Note over MM: MetaMorpho managing 1000 USDC
 ```
-Deposit Flow:
-  User approves USDC → Adapter
-  Adapter receives USDC
-  Adapter deposits to MetaMorpho → receives MetaMorpho shares
-  Adapter mints yfMorpho shares to user (1:1 with deposits)
-  YieldRouter updates user shares
 
-Withdraw Flow:
-  User requests withdrawal
-  Adapter burns yfMorpho shares
-  Adapter redeems from MetaMorpho → receives USDC
-  Adapter transfers USDC to user
-  YieldRouter updates user shares
+**Withdraw Flow:**
 
-Harvest Flow:
-  **Investor triggers harvestYield() from frontend** (24-hour minimum interval)
-  Calculate yield: MetaMorpho value - total shares
-  Withdraw yield from MetaMorpho
-  Distribute via YieldRouter:
-    - 70% → investors (proportional to shares)
-    - 25% → public goods via OctantDonationModule
-    - 5% → protocol treasury
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant MVA as MorphoVaultAdapter
+    participant MM as MetaMorpho Vault
+    participant USDC as USDC Token
+    participant YR as YieldRouter
+
+    U->>MVA: withdraw(500 USDC, user, user)
+
+    MVA->>MVA: _burn(500 yfMorpho shares from user)
+
+    MVA->>MM: withdraw(500, user, MVA)
+    Note over MM: MetaMorpho withdraws<br/>from Morpho Blue markets
+
+    MM->>MM: burn MetaMorpho shares from MVA
+    MVA->>MVA: lastMetaMorphoShares -= burned shares
+
+    MM->>USDC: transfer(500 USDC to user)
+    MVA->>YR: updateUserShares(user, -500)
+
+    MVA-->>U: return shares burned
+
+    Note over U: User received 500 USDC
+    Note over MVA: Adapter holds fewer MetaMorpho shares
+```
+
+**Harvest Flow:**
+
+```mermaid
+sequenceDiagram
+    participant U as Investor
+    participant UI as Frontend
+    participant MVA as MorphoVaultAdapter
+    participant MM as MetaMorpho Vault
+    participant YR as YieldRouter
+    participant ODM as OctantDonationModule
+    participant USDC as USDC Token
+
+    Note over U,UI: Investor clicks "Harvest Yield" button
+
+    U->>UI: Click Harvest
+    UI->>MVA: harvestYield()
+
+    Note over MVA: Check 24h interval passed
+    MVA->>MVA: require(block.timestamp >= lastHarvestTime + 1 day)
+
+    Note over MVA: Calculate yield
+    MVA->>MM: convertToAssets(lastMetaMorphoShares)
+    MM-->>MVA: return 1050 USDC
+    MVA->>MVA: totalSupply() → 1000 yfMorpho shares
+    MVA->>MVA: yield = 1050 - 1000 = 50 USDC
+
+    Note over MVA: Withdraw yield from MetaMorpho
+    MVA->>MM: withdraw(50, MVA, MVA)
+    MM->>MM: burn MetaMorpho shares proportionally
+    MM->>USDC: transfer(50 USDC to MVA)
+
+    Note over MVA: Approve and distribute
+    MVA->>USDC: approve(YieldRouter, 50)
+    MVA->>YR: distributeYield(50)
+
+    Note over YR: 70/25/5 Distribution
+    YR->>YR: investorAmount = 50 * 70% = 35
+    YR->>YR: publicGoodsAmount = 50 * 25% = 12.5
+    YR->>YR: protocolAmount = 50 * 5% = 2.5
+
+    YR->>USDC: transfer(35 to investors)
+    YR->>ODM: donate(12.5, contributor)
+    YR->>USDC: transfer(2.5 to treasury)
+
+    MVA->>MVA: lastHarvestTime = block.timestamp
+    MVA->>MVA: totalYieldGenerated += 50
+
+    MVA-->>UI: HarvestCompleted event
+    UI-->>U: Show success + transaction hash
+
+    Note over U: Earned 35 USDC (70% of 50)
+    Note over ODM: 12.5 USDC donated to public goods
+```
 
 **⚠️ Important**: Yield must be manually harvested via the "Harvest Yield" button in the investor dashboard. Public goods donations only occur AFTER harvest is triggered.
-```
 
 ## Interfaces
 

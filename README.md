@@ -78,6 +78,168 @@ The protocol consists of five primary smart contracts deployed on Base Sepolia:
 - `AaveVaultAdapter.sol` - Wraps Aave v3 pools with automatic yield harvesting
 - `MorphoVaultAdapter.sol` - Wraps Morpho MetaMorpho vaults with yield distribution
 
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph Users
+        B[Business]
+        I[Investor]
+    end
+
+    subgraph Core["Aruna Core Contracts"]
+        AC[ArunaCore<br/>Invoice Management<br/>ERC-721 NFTs]
+        YR[YieldRouter<br/>70/25/5 Distribution]
+        ODM[OctantDonationModule<br/>Public Goods Tracking]
+    end
+
+    subgraph Vaults["ERC-4626 Vaults"]
+        AV[AaveVaultAdapter<br/>6.5% APY]
+        MV[MorphoVaultAdapter<br/>8.2% APY]
+    end
+
+    subgraph External["External Protocols"]
+        AAVE[Aave v3 Pool<br/>Lending Protocol]
+        MORPHO[MetaMorpho Vault<br/>Optimized Yields]
+        OCTANT[Octant v2<br/>Public Goods Distribution]
+    end
+
+    %% Business Flow
+    B -->|Submit Invoice<br/>Lock 10% Collateral| AC
+    AC -->|Mint Invoice NFT<br/>3% Grant| B
+
+    %% Investor Flow
+    I -->|Deposit USDC| AV
+    I -->|Deposit USDC| MV
+    AV -->|Supply Assets| AAVE
+    MV -->|Supply Assets| MORPHO
+
+    %% Harvest Flow
+    I -->|Trigger Harvest| AV
+    I -->|Trigger Harvest| MV
+    AV -->|Withdraw Yield| YR
+    MV -->|Withdraw Yield| YR
+
+    %% Distribution Flow
+    YR -->|70% Yield| I
+    YR -->|25% Yield| ODM
+    YR -->|5% Yield| AC
+    ODM -->|Batch Forward| OCTANT
+
+    %% Styling
+    classDef userClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef coreClass fill:#EC4899,stroke:#BE185D,color:#fff
+    classDef vaultClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
+    classDef externalClass fill:#10B981,stroke:#047857,color:#fff
+
+    class B,I userClass
+    class AC,YR,ODM coreClass
+    class AV,MV vaultClass
+    class AAVE,MORPHO,OCTANT externalClass
+```
+
+### Vault Integration Architecture
+
+```mermaid
+graph LR
+    subgraph Investor Interface
+        UI[Investor Dashboard]
+    end
+
+    subgraph Vault Layer["ERC-4626 Vault Layer"]
+        AV[AaveVaultAdapter]
+        MV[MorphoVaultAdapter]
+    end
+
+    subgraph Protocol Layer["DeFi Protocol Layer"]
+        AP[Aave v3 Pool]
+        MM[MetaMorpho]
+        MB[Morpho Blue Markets]
+    end
+
+    subgraph Yield Distribution
+        YR[YieldRouter]
+        ODM[OctantDonationModule]
+    end
+
+    UI -->|deposit| AV
+    UI -->|deposit| MV
+    UI -->|harvestYield| AV
+    UI -->|harvestYield| MV
+
+    AV -->|supply| AP
+    AV -.->|receives aUSDC| AP
+
+    MV -->|deposit| MM
+    MM -->|allocate| MB
+    MV -.->|receives shares| MM
+
+    AV -->|distribute yield| YR
+    MV -->|distribute yield| YR
+
+    YR -->|70%| UI
+    YR -->|25%| ODM
+    YR -->|5%| Treasury[Protocol Treasury]
+
+    ODM -->|forward| OCTANT[Octant v2]
+
+    classDef uiClass fill:#3B82F6,stroke:#1E40AF,color:#fff
+    classDef vaultClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
+    classDef protocolClass fill:#10B981,stroke:#047857,color:#fff
+    classDef distributionClass fill:#EC4899,stroke:#BE185D,color:#fff
+
+    class UI uiClass
+    class AV,MV vaultClass
+    class AP,MM,MB protocolClass
+    class YR,ODM,Treasury distributionClass
+```
+
+### Complete User Journey Flow
+
+```mermaid
+sequenceDiagram
+    participant B as Business
+    participant AC as ArunaCore
+    participant I as Investor
+    participant V as Vault Adapter
+    participant P as DeFi Protocol<br/>(Aave/Morpho)
+    participant YR as YieldRouter
+    participant ODM as OctantDonationModule
+    participant O as Octant v2
+
+    Note over B,AC: Step 1: Invoice Submission
+    B->>AC: submitInvoiceCommitment($10k)
+    AC->>B: Transfer 10% collateral ($1k USDC)
+    AC->>B: Send 3% grant ($300 USDC)
+    AC->>B: Mint Invoice NFT
+    Note over B: Net: $700 locked, $300 grant received
+
+    Note over I,P: Step 2: Investor Deposits
+    I->>V: deposit($5k USDC)
+    V->>P: supply($5k)
+    P-->>V: mint yield-bearing tokens
+    V-->>I: mint vault shares
+
+    Note over P: Step 3: Yield Accumulation (automatic)
+    Note over P: Time passes... yield accrues
+
+    Note over I,O: Step 4: Harvest & Distribution
+    I->>V: harvestYield() (after 24h)
+    V->>P: withdraw(accumulated yield)
+    P-->>V: transfer yield tokens
+    V->>YR: distributeYield(total yield)
+
+    YR->>I: transfer 70% yield
+    YR->>ODM: donate 25% yield
+    YR->>AC: transfer 5% protocol fee
+
+    ODM->>O: forwardToOctant() (batched)
+
+    Note over I: Investor earns yield + funds public goods
+    Note over B: Business reputation increases
+    Note over O: Public goods receive sustainable funding
+```
+
 **Key Flow:**
 1. Investors deposit USDC to vault adapters → Vaults supply to Aave/Morpho
 2. Yield accumulates automatically in underlying protocols
