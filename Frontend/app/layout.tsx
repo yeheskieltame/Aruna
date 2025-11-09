@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "Aruna - Invoice Financing Meets Public Goods",
   description: "Turn future invoice payments into sustainable public goods funding",
   generator: "v0.app",
+  icons: {
+    icon: "/Anura.png",
+    shortcut: "/Anura.png",
+    apple: "/Anura.png",
+  },
 }
 
 export default function RootLayout({
