@@ -6,23 +6,16 @@ Aruna removes the donation decision entirely. Instead of asking users to repeate
 
 ### How It Works Simply
 
+**One deposit → Perpetual public goods funding**
+
 ```mermaid
 graph LR
-    USER[Investor] -->|1. Deposit once| VAULT[Yield Vault]
-    VAULT -->|2. Earn yield| SPLIT[Automatic Split]
-    SPLIT -->|70%| USER
-    SPLIT -->|25%| PG[Public Goods]
-    SPLIT -->|5%| PROTO[Protocol]
-
-    classDef userClass fill:#3B82F6,stroke:#1E40AF,color:#fff
-    classDef vaultClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
-    classDef pgClass fill:#10B981,stroke:#047857,color:#fff
-    classDef protoClass fill:#EC4899,stroke:#BE185D,color:#fff
-
-    class USER userClass
-    class VAULT vaultClass
-    class PG pgClass
-    class PROTO protoClass
+    A[Investor Deposits USDC] --> B[Yield Vault]
+    B --> C[Earn Yield Automatically]
+    C --> D[Harvest Triggers Distribution]
+    D --> E[70% to Investor]
+    D --> F[25% to Public Goods]
+    D --> G[5% to Protocol]
 ```
 
 **One action. Perpetual impact.**

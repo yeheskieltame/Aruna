@@ -1,0 +1,25 @@
+{
+  "title": "Aruna Protocol Documentation",
+  "description": "Turn Invoices Into Public Goods Funding",
+  "author": "Aruna Protocol",
+  "language": "en",
+  "gitbook": ">=3.0.0",
+  "plugins": [
+    "mermaid-gb3",
+    "theme-default",
+    "-lunr",
+    "-search",
+    "search-plus"
+  ],
+  "pluginsConfig": {
+    "mermaid-gb3": {
+      "theme": "default"
+    }
+  },
+  "links": {
+    "sidebar": {
+      "Live App": "https://aruna-defi.vercel.app",
+      "GitHub": "https://github.com/yeheskieltame/Aruna"
+    }
+  }
+}

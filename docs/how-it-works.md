@@ -45,19 +45,16 @@ Click the **"Harvest Yield"** button in investor dashboard:
 
 ```mermaid
 sequenceDiagram
-    participant You
+    participant Investor
     participant Vault
-    participant Router
-    participant Wallet
+    participant YieldRouter
+    participant PublicGoods
 
-    You->>Vault: Click Harvest
-    Vault->>Router: Send $34 yield
-    Router->>Wallet: Transfer $24 (70%)
-    Router->>Public Goods: Donate $8.50 (25%)
-    Router->>Protocol: Fee $1.70 (5%)
-
-    Note over You: ✅ Earned $24
-    Note over Public Goods: ✅ Auto-donated $8.50
+    Investor->>Vault: Click Harvest Yield
+    Vault->>YieldRouter: Send 34 USD yield
+    YieldRouter->>Investor: Transfer 24 USD (70%)
+    YieldRouter->>PublicGoods: Donate 8.50 USD (25%)
+    YieldRouter->>YieldRouter: Keep 1.70 USD fee (5%)
 ```
 
 **Requirements:**
@@ -124,31 +121,24 @@ When customer pays you:
 
 Every harvest triggers automatic distribution:
 
+**Example: $100 Yield Harvested**
+
 ```mermaid
-graph TB
-    HARVEST[Harvest: $100 Yield] --> ROUTER{YieldRouter}
+graph TD
+    A[Harvest 100 USD Yield] --> B[YieldRouter Splits]
+    B --> C[70 USD to Investors]
+    B --> D[25 USD to Public Goods]
+    B --> E[5 USD to Protocol]
 
-    ROUTER -->|Calculate| INV[Investors: $70]
-    ROUTER -->|Calculate| PG[Public Goods: $25]
-    ROUTER -->|Calculate| PROTO[Protocol: $5]
+    C --> C1[Claimable in Your Wallet]
+    D --> D1[Sent to Octant v2]
+    E --> E1[Protocol Treasury]
 
-    INV --> INV_WALLET[Your Wallet<br/>Claimable]
-    PG --> OCTANT[Octant v2<br/>Distribution]
-    PROTO --> TREASURY[Protocol Treasury<br/>Maintenance]
-
-    OCTANT --> PROJECTS[Ethereum Foundation<br/>Protocol Guild<br/>Gitcoin<br/>OpenZeppelin<br/>More...]
-
-    classDef harvestClass fill:#F59E0B,stroke:#D97706,color:#fff
-    classDef routerClass fill:#EC4899,stroke:#BE185D,color:#fff
-    classDef invClass fill:#3B82F6,stroke:#1E40AF,color:#fff
-    classDef pgClass fill:#10B981,stroke:#047857,color:#fff
-    classDef protoClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
-
-    class HARVEST harvestClass
-    class ROUTER routerClass
-    class INV,INV_WALLET invClass
-    class PG,OCTANT,PROJECTS pgClass
-    class PROTO,TREASURY protoClass
+    D1 --> D2[Distributed to Projects]
+    D2 --> P1[Ethereum Foundation]
+    D2 --> P2[Protocol Guild]
+    D2 --> P3[Gitcoin]
+    D2 --> P4[OpenZeppelin]
 ```
 
 **This happens automatically. You can't skip it. No governance can change it.**

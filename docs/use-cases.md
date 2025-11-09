@@ -12,28 +12,24 @@
 
 ### Using Aruna
 
+**Step-by-Step Flow:**
+
 ```mermaid
 sequenceDiagram
-    participant Agency as Web3 Agency
-    participant Aruna as Aruna Protocol
-    participant Client as Client
+    participant Agency
+    participant Aruna
+    participant Client
 
-    Note over Agency: Invoice: $50,000<br/>Due: 60 days
+    Agency->>Aruna: Submit 50000 USD invoice (60 days)
+    Agency->>Aruna: Lock 5000 USD collateral (10%)
+    Aruna->>Agency: Send 1500 USD grant (3%)
 
-    Agency->>Aruna: Submit invoice commitment
-    Agency->>Aruna: Lock $5,000 collateral (10%)
-    Aruna->>Agency: Send $1,500 grant (3%)
+    Note over Agency: Net: 3500 USD locked, 1500 USD grant received
 
-    Note over Agency: ✅ Net: $3,500 locked<br/>$1,500 grant received<br/>Cash flow improved!
-
-    Note over Agency,Client: 60 days pass...
-
-    Client->>Agency: Pay $50,000 invoice
+    Client->>Agency: Pay 50000 USD invoice (after 60 days)
     Agency->>Aruna: Settle invoice
-    Aruna->>Agency: Unlock $3,500 collateral
-    Aruna->>Agency: +1 reputation
-
-    Note over Agency: Total benefit:<br/>$1,500 instant cash<br/>Built credit history<br/>No traditional fees
+    Aruna->>Agency: Unlock 3500 USD collateral
+    Aruna->>Agency: Grant +1 reputation point
 ```
 
 ### Results
@@ -50,38 +46,18 @@ sequenceDiagram
 
 ### The Journey
 
+**Timeline of Impact:**
+
 ```mermaid
-graph TB
-    START[Investor has<br/>$100,000 USDC] -->|Research| COMPARE{Compare Options}
-
-    COMPARE -->|Option A| TRAD[Traditional Staking<br/>4-5% APY<br/>❌ No public goods impact]
-    COMPARE -->|Option B| ARUNA[Aruna Protocol<br/>5.46% effective APY<br/>✅ Auto-funds public goods]
-
-    ARUNA --> DEPOSIT[Deposit to<br/>Morpho Vault]
-
-    DEPOSIT --> MONTH1[After Month 1]
-    MONTH1 --> HARVEST1[Harvest: $683 yield]
-    HARVEST1 --> SPLIT1[Distribution:<br/>$478 earned<br/>$171 to public goods<br/>$34 to protocol]
-
-    SPLIT1 --> MONTH2[After Month 2]
-    MONTH2 --> HARVEST2[Harvest: $683 yield]
-    HARVEST2 --> SPLIT2[Distribution:<br/>$478 earned<br/>$171 to public goods<br/>$34 to protocol]
-
-    SPLIT2 --> YEAR1[After Year 1]
-
-    YEAR1 --> RESULTS[Total Results:<br/>💰 $5,740 earned<br/>🌍 $2,050 to public goods<br/>📈 Reputation as supporter]
-
-    classDef startClass fill:#3B82F6,stroke:#1E40AF,color:#fff
-    classDef compareClass fill:#F59E0B,stroke:#D97706,color:#fff
-    classDef arunaClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
-    classDef goodClass fill:#10B981,stroke:#047857,color:#fff
-    classDef resultClass fill:#EC4899,stroke:#BE185D,color:#fff
-
-    class START startClass
-    class COMPARE compareClass
-    class ARUNA,DEPOSIT arunaClass
-    class MONTH1,MONTH2,HARVEST1,HARVEST2,SPLIT1,SPLIT2 goodClass
-    class YEAR1,RESULTS resultClass
+graph LR
+    A[Investor: 100000 USD] --> B[Deposit to Morpho Vault]
+    B --> C[Month 1: Harvest 683 USD]
+    C --> D[478 USD earned + 171 USD to public goods]
+    D --> E[Month 2: Harvest 683 USD]
+    E --> F[478 USD earned + 171 USD to public goods]
+    F --> G[Year 1 Total]
+    G --> H[5740 USD earned]
+    G --> I[2050 USD to public goods]
 ```
 
 ### Five-Year Impact
@@ -107,24 +83,26 @@ graph TB
 
 ### Traditional Approach vs Aruna
 
+**Comparison:**
+
+**Traditional Treasury Management:**
 ```mermaid
-graph LR
-    subgraph Traditional["❌ Traditional Treasury Management"]
-        T1[Treasury: $5M idle] --> T2[Options:<br/>• Staking: Low yields<br/>• Lending: No impact<br/>• Grants: One-time only]
-        T2 --> T3[Result:<br/>Suboptimal returns<br/>No recurring impact]
-    end
+graph TD
+    A[DAO Treasury: 5M USD] --> B[Traditional Options]
+    B --> C[Staking: Low yields]
+    B --> D[Lending: No impact]
+    B --> E[One-time grants only]
+    C & D & E --> F[Result: Suboptimal]
+```
 
-    subgraph Aruna["✅ Aruna Treasury Strategy"]
-        A1[Treasury: $5M] --> A2[Deposit to Aruna Vaults]
-        A2 --> A3[Outcomes:<br/>• $287K/year earned<br/>• $102K/year to public goods<br/>• Full liquidity maintained]
-        A3 --> A4[Impact:<br/>✅ Competitive yields<br/>✅ Perpetual public goods funding<br/>✅ Aligned with values]
-    end
-
-    classDef traditionalClass fill:#EF4444,stroke:#DC2626,color:#fff
-    classDef arunaClass fill:#10B981,stroke:#047857,color:#fff
-
-    class T1,T2,T3 traditionalClass
-    class A1,A2,A3,A4 arunaClass
+**Aruna Treasury Strategy:**
+```mermaid
+graph TD
+    A[DAO Treasury: 5M USD] --> B[Deposit to Aruna]
+    B --> C[287K USD/year earned]
+    B --> D[102K USD/year to public goods]
+    B --> E[Full liquidity maintained]
+    C & D & E --> F[Result: Optimal + Impact]
 ```
 
 ### Annual Impact at $5M Deposit
@@ -149,28 +127,26 @@ graph LR
 
 ### Integration Flow
 
+**Seamless User Experience:**
+
 ```mermaid
 sequenceDiagram
-    participant User as Protocol User
-    participant Proto as Partner Protocol
-    participant Aruna as Aruna Vaults
-    participant PG as Public Goods
+    participant User
+    participant PartnerProtocol
+    participant ArunaVaults
+    participant PublicGoods
 
-    User->>Proto: Deposit via partner UI
-    Proto->>Aruna: Forward deposit to Aruna vault
-    Aruna-->>Proto: Return vault shares
-    Proto-->>User: Show balance + yield
+    User->>PartnerProtocol: Deposit via partner UI
+    PartnerProtocol->>ArunaVaults: Forward to Aruna vault
+    ArunaVaults-->>PartnerProtocol: Return vault shares
+    PartnerProtocol-->>User: Show balance and yield
 
-    Note over Aruna: Yield accrues automatically
-
-    User->>Proto: Request withdraw
-    Proto->>Aruna: Harvest & withdraw
-    Aruna->>Aruna: Distribute 70/25/5
-    Aruna-->>Proto: Return user funds (70% yield)
-    Aruna->>PG: Send 25% to public goods
-    Proto-->>User: Transfer funds
-
-    Note over User: ✅ Earned yield<br/>✅ Funded public goods<br/>✅ Seamless experience
+    User->>PartnerProtocol: Request withdraw
+    PartnerProtocol->>ArunaVaults: Harvest and withdraw
+    ArunaVaults->>ArunaVaults: Distribute 70/25/5 split
+    ArunaVaults-->>PartnerProtocol: Return funds (70% yield)
+    ArunaVaults->>PublicGoods: Send 25% to public goods
+    PartnerProtocol-->>User: Transfer funds to wallet
 ```
 
 ### Benefits for Partner Protocol
@@ -193,48 +169,25 @@ sequenceDiagram
 
 ### Funding Flow
 
+**From Investors to Core Developers:**
+
 ```mermaid
-graph TB
-    subgraph Investors["💰 Aruna Investors"]
-        I1[$2M deposited]
-        I2[$5M deposited]
-        I3[$3M deposited]
-    end
+graph TD
+    A[Multiple Investors] --> B[Total: 10M USD TVL]
+    B --> C[Generate 820K USD/year yield at 8.2% APY]
 
-    subgraph Vaults["🏦 Yield Generation"]
-        V[Total: $10M TVL<br/>8.2% APY<br/>$820K/year yield]
-    end
+    C --> D1[574K USD/year to Investors - 70%]
+    C --> D2[205K USD/year to Public Goods - 25%]
+    C --> D3[41K USD/year to Protocol - 5%]
 
-    subgraph Distribution["⚙️ Automatic Distribution"]
-        D70[70% → $574K/year<br/>To Investors]
-        D25[25% → $205K/year<br/>To Public Goods]
-        D5[5% → $41K/year<br/>To Protocol]
-    end
+    D2 --> E[Octant v2 Distribution]
 
-    subgraph Octant["🌍 Octant v2"]
-        O[Distribute to:<br/>• Protocol Guild<br/>• Ethereum Foundation<br/>• Gitcoin<br/>• OpenZeppelin<br/>• More projects]
-    end
+    E --> F1[Protocol Guild: 50K USD/year]
+    E --> F2[Ethereum Foundation: 30K USD/year]
+    E --> F3[Gitcoin: 25K USD/year]
+    E --> F4[Other Projects: 100K USD/year]
 
-    I1 & I2 & I3 --> V
-    V --> D70 & D25 & D5
-    D25 --> O
-
-    O --> PG1[Protocol Guild:<br/>$50K/year<br/>Funds 10 core devs]
-    O --> PG2[EF Research:<br/>$30K/year<br/>Supports EIP development]
-    O --> PG3[Gitcoin Infrastructure:<br/>$25K/year<br/>Grant platform costs]
-    O --> PG4[Other Projects:<br/>$100K/year<br/>Community-selected]
-
-    classDef investorClass fill:#3B82F6,stroke:#1E40AF,color:#fff
-    classDef vaultClass fill:#8B5CF6,stroke:#6D28D9,color:#fff
-    classDef distClass fill:#F59E0B,stroke:#D97706,color:#fff
-    classDef octantClass fill:#EC4899,stroke:#BE185D,color:#fff
-    classDef pgClass fill:#10B981,stroke:#047857,color:#fff
-
-    class I1,I2,I3 investorClass
-    class V vaultClass
-    class D70,D25,D5 distClass
-    class O octantClass
-    class PG1,PG2,PG3,PG4 pgClass
+    F1 --> G[Funds 10 Core Developers]
 ```
 
 ### Impact on Protocol Guild
@@ -288,28 +241,27 @@ graph TB
 
 ### User Experience
 
+**Through Yield Aggregator:**
+
 ```mermaid
 sequenceDiagram
     participant User
-    participant Aggregator as Yield Aggregator
-    participant Aruna as Aruna Vaults
-    participant Display as User Dashboard
+    participant Aggregator
+    participant ArunaVaults
 
     User->>Aggregator: Browse vaults
-    Aggregator-->>User: Show options:<br/>• Standard Vault: 6% APY<br/>• Impact Vault (Aruna): 5.46% APY + public goods
+    Aggregator-->>User: Show Standard vs Impact Vault
 
-    User->>Aggregator: Select Impact Vault
-    Aggregator->>Aruna: Deposit user funds
-    Aruna-->>Aggregator: Return vault shares
+    User->>Aggregator: Select Impact Vault (Aruna)
+    Aggregator->>ArunaVaults: Deposit user funds
+    ArunaVaults-->>Aggregator: Return vault shares
 
-    loop Monthly
-        Aruna->>Aruna: Accrue yield
+    loop Monthly Cycle
+        ArunaVaults->>ArunaVaults: Accrue yield automatically
         User->>Aggregator: View dashboard
-        Aggregator->>Aruna: Query yield earned
-        Aggregator->>Display: Show:<br/>• Your earnings<br/>• Public goods funded<br/>• Total impact
+        Aggregator->>ArunaVaults: Query yield earned
+        Aggregator-->>User: Display earnings and public goods funded
     end
-
-    Note over User,Display: ✅ Simple UX<br/>✅ Transparent impact<br/>✅ Competitive yields
 ```
 
 ### Aggregator Benefits
@@ -337,9 +289,9 @@ sequenceDiagram
 
 Ready to try Aruna? Here's what to do:
 
-1. **For Investors**: Visit the investor dashboard, connect wallet, deposit USDC
+1. **For Investors**: Visit [Aruna App](https://aruna-defi.vercel.app), connect wallet, deposit USDC
 2. **For Businesses**: Submit your first invoice commitment via business dashboard
-3. **For Protocols**: Contact team about integration opportunities
+3. **For Protocols**: Check our [GitHub](https://github.com/yeheskieltame/Aruna) for integration docs
 4. **For Public Goods**: Apply to Octant v2 to receive allocations
 
 **Questions?** Check out [How It Works](how-it-works.md) or review [Key Concepts](concepts.md).

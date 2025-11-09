@@ -18,7 +18,7 @@ This documentation will help you understand:
 ## Quick Start
 
 **For Investors:**
-1. Connect your wallet to [Aruna App](https://aruna.finance)
+1. Connect your wallet to [Aruna App](https://aruna-defi.vercel.app)
 2. Deposit USDC to Aave or Morpho vault
 3. Earn 5.46% effective APY
 4. Automatically fund public goods with 25% of your yield
@@ -47,6 +47,6 @@ Traditional donation models require repeated user actions. Aruna makes public go
 
 ## Support
 
-- GitHub: [Repository](https://github.com/aruna-protocol)
-- Twitter: [@ArunaFinance](https://twitter.com/ArunaFinance)
-- Email: support@aruna.finance
+- Live App: [https://aruna-defi.vercel.app](https://aruna-defi.vercel.app)
+- GitHub: [https://github.com/yeheskieltame/Aruna](https://github.com/yeheskieltame/Aruna)
+- Base Sepolia Explorer: [BaseScan](https://sepolia.basescan.org)
