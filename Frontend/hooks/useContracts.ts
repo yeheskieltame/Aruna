@@ -475,12 +475,25 @@ export function useClaimYield() {
   }
 }
 
+// ============================================================================
+// PUBLIC GOODS HOOKS - Octant Integration
+// ============================================================================
+
 // Hook for getting total donations (public goods)
 export function useTotalDonations() {
   return useReadContract({
     address: CONTRACTS.OCTANT_MODULE.address as `0x${string}`,
     abi: ABIS.OCTANT_MODULE,
     functionName: "totalDonated",
+  })
+}
+
+// Hook for getting current epoch donations
+export function useCurrentEpochDonations() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address as `0x${string}`,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "currentEpochDonations",
   })
 }
 
@@ -495,6 +508,115 @@ export function useBusinessContribution(address?: `0x${string}`) {
       enabled: !!address,
     },
   })
+}
+
+// Hook for getting current epoch
+export function useCurrentEpoch() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address as `0x${string}`,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "getCurrentEpoch",
+  })
+}
+
+// Hook for getting donations per epoch
+export function useEpochDonations(epoch?: bigint) {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address as `0x${string}`,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "donationsPerEpoch",
+    args: epoch !== undefined ? [epoch] : undefined,
+    query: {
+      enabled: epoch !== undefined,
+    },
+  })
+}
+
+// Hook for getting supported projects
+export function useSupportedProjects() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address as `0x${string}`,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "getSupportedProjects",
+  })
+}
+
+// ============================================================================
+// VAULT HARVEST HOOKS - Trigger Yield Distribution
+// ============================================================================
+
+// Hook for harvesting yield from Aave Vault
+export function useHarvestAaveYield() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000,
+      retry: 3,
+    },
+  })
+
+  const harvest = () => {
+    try {
+      console.log("🌾 Harvesting Aave vault yield...")
+      writeContract({
+        address: CONTRACTS.AAVE_VAULT.address as `0x${string}`,
+        abi: ABIS.AAVE_VAULT,
+        functionName: "harvestYield",
+        gas: 500000n,
+      })
+    } catch (err) {
+      console.error("Error harvesting Aave yield:", err)
+      throw err
+    }
+  }
+
+  return {
+    harvest,
+    isPending,
+    isConfirming,
+    isSuccess,
+    hash,
+    error,
+  }
+}
+
+// Hook for harvesting yield from Morpho Vault
+export function useHarvestMorphoYield() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000,
+      retry: 3,
+    },
+  })
+
+  const harvest = () => {
+    try {
+      console.log("🌾 Harvesting Morpho vault yield...")
+      writeContract({
+        address: CONTRACTS.MORPHO_VAULT.address as `0x${string}`,
+        abi: ABIS.MORPHO_VAULT,
+        functionName: "harvestYield",
+        gas: 500000n,
+      })
+    } catch (err) {
+      console.error("Error harvesting Morpho yield:", err)
+      throw err
+    }
+  }
+
+  return {
+    harvest,
+    isPending,
+    isConfirming,
+    isSuccess,
+    hash,
+    error,
+  }
 }
 
 // Utility function to format USDC amount

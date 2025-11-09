@@ -151,6 +151,55 @@ export function useApprovalTransaction() {
 }
 
 /**
+ * Hook untuk handle settlement transaction (no approval needed)
+ */
+export function useSettlementTransaction() {
+  const modal = useTransactionModal()
+  const [settlementDetails, setSettlementDetails] = useState<{
+    invoiceAmount: number
+    collateralReturned: number
+    reputationGain: number
+  } | null>(null)
+
+  const startSettle = useCallback(() => {
+    modal.openModal()
+    modal.setConfirming()
+  }, [modal])
+
+  const settlePending = useCallback(
+    (hash: string) => {
+      modal.setPending(hash)
+    },
+    [modal]
+  )
+
+  const settleSuccess = useCallback(
+    (hash: string, details: { invoiceAmount: number; collateralReturned: number; reputationGain: number }) => {
+      setSettlementDetails(details)
+      modal.setSuccess(hash)
+    },
+    [modal]
+  )
+
+  const settleError = useCallback(
+    (error: Error | string) => {
+      const errorMessage = typeof error === "string" ? error : error.message
+      modal.setError(parseErrorMessage(errorMessage))
+    },
+    [modal]
+  )
+
+  return {
+    ...modal,
+    settlementDetails,
+    startSettle,
+    settlePending,
+    settleSuccess,
+    settleError,
+  }
+}
+
+/**
  * Parse error messages to be more user-friendly
  */
 function parseErrorMessage(error: string): string {
