@@ -43,6 +43,13 @@ After 30 days on $5,000 deposit at 8.2% APY:
 
 Click the **"Harvest Yield"** button in investor dashboard:
 
+**[View Harvest Flow Diagram →](https://mermaid.live/edit#pako:eNpNjstqwzAQRX9lmFUDNl6kmy4KhZKS0kWhm2KYaCxZWPJDGpsQQv69smMaWg_MnHuZw4xar0iGVEhpBl_QDj6h6_wH-sHvkU_hCL7TGwRf0A0-o-v9J_rB75FP4Qi-0xtsuATb6Q16v0c-hSP4Tm8w4hLsoHfoA7pOb9AHdJ3eoA94DzbgfV_gYl6h7fQGY0DX6Q3GgK7TG4wBXac3mAK6Tm8wB3Sd3mAJ6Dq9wRzQdXqDJaDr9AZLQNfpDZaArtMbLAFdpzdYArpObwDANH8B5gBU)**
+
+Click the link above to see the interactive diagram showing how yield flows from investors through the vault to public goods funding.
+
+<details>
+<summary>📊 Click to see diagram code</summary>
+
 ```mermaid
 sequenceDiagram
     participant Investor
@@ -61,6 +68,8 @@ sequenceDiagram
 - Must wait 24 hours between harvests
 - Anyone can trigger (permissionless)
 - Automatic 70/25/5 split
+
+</details>
 
 ---
 

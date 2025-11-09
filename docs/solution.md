@@ -8,6 +8,11 @@ Aruna removes the donation decision entirely. Instead of asking users to repeate
 
 **One deposit → Perpetual public goods funding**
 
+**[View Aruna Flow Diagram →](https://mermaid.live/edit#pako:eNqNVMtqwzAQ_JdC7hNlU6q0my4KhZKS0iWht1iWDYUWl4yEppIQv7tslNaWg_MnHuYQx5ar0iKVEhpRk_QDk6h6_wX-sHvlU_xCL7TG4Qf0A0-o-99J_rB95FP4Qi-0xtsuATb6Q16v0c-hSP4Tm8w4hLsoHfoA7pOb9AHdJ3eoA94DzbgfV_gYl6h7fQGY0DX6Q3GgK7TG4wBXac3mAK6Tm8wB3Sd3mAJ6Dq9wRzQdXqDJaDr9AZLQNfpDZaArtMbLAFdpzdYArpObwDANH8B5gBU)**
+
+<details>
+<summary>📊 Click to see diagram code</summary>
+
 ```mermaid
 graph LR
     A[Investor Deposits USDC] --> B[Yield Vault]
@@ -17,6 +22,8 @@ graph LR
     D --> F[25% to Public Goods]
     D --> G[5% to Protocol]
 ```
+
+</details>
 
 **One action. Perpetual impact.**
 
