@@ -184,12 +184,17 @@ After 30 days at 6.5% APY:
 
 **Yield Harvest Process:**
 
-1. Anyone calls `harvestYield()` after 1 day interval
+1. **Investor calls `harvestYield()` from frontend** (after 1 day interval minimum)
 2. Adapter calculates yield as `aToken balance - totalSupply`
 3. Adapter withdraws yield from Aave via `aavePool.withdraw()`
 4. Adapter approves YieldRouter to spend yield
-5. YieldRouter distributes: 70% investors, 25% public goods, 5% protocol
+5. YieldRouter automatically distributes:
+   - 70% → investors (proportional to vault shares)
+   - 25% → public goods via OctantDonationModule
+   - 5% → protocol treasury
 6. Adapter updates `lastHarvestTime` and `totalYieldGenerated`
+
+**⚠️ Important**: Yield must be manually harvested via the "Harvest Yield" button in the investor dashboard. Public goods donations only occur AFTER harvest is triggered.
 
 ## Safety Checks
 
@@ -378,18 +383,26 @@ This batches yield into daily distributions rather than per-transaction.
 
 ### Base Sepolia Testnet
 
+**⚠️ IMPORTANT: Correct Addresses for Base Sepolia**
+
 ```
 USDC: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
 Aave v3 Pool: 0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b
 Aave aUSDC: 0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB
 ```
 
-### Deployed Contracts
+**Note:** These are the officially verified Aave v3 addresses on Base Sepolia used in the deployment script.
 
-After deployment, contract addresses are saved to:
+### Deployed Aruna Contracts
+
+After deployment, addresses are saved to:
 ```
 Aruna-Contract/deployments/84532.json
 ```
+
+**Current Deployment (Nov 2024):**
+- AaveVaultAdapter: `0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905`
+- View on BaseScan: https://sepolia.basescan.org/address/0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905
 
 ## Testing
 
@@ -460,6 +473,47 @@ cast call <AAVE_VAULT_ADAPTER> "aavePool()" --rpc-url https://sepolia.base.org
 # Check asset
 cast call <AAVE_VAULT_ADAPTER> "asset()" --rpc-url https://sepolia.base.org
 ```
+
+## Frontend Integration
+
+### Using Harvest Functionality
+
+Investors trigger yield harvesting from the investor dashboard using the `useHarvestAaveYield()` hook:
+
+```typescript
+import { useHarvestAaveYield } from "@/hooks/useContracts"
+
+const { harvest, isPending, isConfirming, isSuccess, hash, error } = useHarvestAaveYield()
+
+// Trigger harvest
+const handleHarvest = () => {
+  harvest() // Calls harvestYield() on AaveVaultAdapter
+}
+
+// Transaction states:
+// - isPending: Waiting for user wallet confirmation
+// - isConfirming: Transaction submitted, waiting for confirmation
+// - isSuccess: Harvest complete, yield distributed
+// - hash: Transaction hash for BaseScan verification
+```
+
+**Harvest Requirements:**
+- Minimum 24-hour interval between harvests per vault
+- Anyone can call harvest (permissionless)
+- Transaction automatically triggers 70/25/5 distribution
+- Public goods donations created immediately upon harvest
+
+### Transaction Flow
+
+The frontend displays a multi-step transaction modal:
+1. **Confirming** - User confirms transaction in wallet
+2. **Pending** - Transaction submitted to blockchain
+3. **Success** - Yield distributed, shows transaction hash
+
+Users can verify the harvest transaction on BaseScan to see:
+- Yield amount withdrawn from Aave
+- Distribution to YieldRouter
+- Allocation to investors, public goods, and protocol
 
 ## Performance Metrics
 

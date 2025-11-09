@@ -12,15 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  WalletDropdown,
-  WalletDropdownBasename,
-  WalletDropdownDisconnect,
-  WalletDropdownLink,
-  Wallet as WalletWrapper,
-} from "@coinbase/onchainkit/wallet"
-import { Address, Avatar, Name, Identity, EthBalance } from "@coinbase/onchainkit/identity"
-import { Wallet, Link2, Smartphone } from "lucide-react"
+import { Wallet, Link2, Smartphone, X } from "lucide-react"
 
 export function WalletConnectButton() {
   const [open, setOpen] = useState(false)
@@ -36,25 +28,28 @@ export function WalletConnectButton() {
   // If connected, show the wallet dropdown
   if (isConnected && address) {
     return (
-      <WalletWrapper>
-        <Button variant="outline" className="gap-2">
-          <Avatar address={address} className="h-6 w-6" />
-          <Name address={address} />
+      <div className="flex items-center gap-2">
+        <div className="bg-primary/10 dark:bg-primary/20 border-2 border-primary/30 dark:border-primary/40 rounded-lg px-3 py-2 flex items-center gap-2">
+          <Wallet size={16} className="text-primary shrink-0" />
+          <span className="font-mono font-bold text-sm text-foreground hidden sm:inline">
+            {address.slice(0, 6)}...{address.slice(-4)}
+          </span>
+          <span className="font-mono font-bold text-sm text-foreground sm:hidden">
+            {address.slice(0, 4)}...{address.slice(-3)}
+          </span>
+        </div>
+
+        {/* Disconnect Button */}
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => disconnect()}
+          className="gap-1.5 font-medium"
+        >
+          <X size={14} />
+          <span className="hidden sm:inline">Disconnect</span>
         </Button>
-        <WalletDropdown>
-          <Identity className="px-4 pt-3 pb-2" address={address} hasCopyAddressOnClick>
-            <Avatar />
-            <Name />
-            <Address />
-            <EthBalance />
-          </Identity>
-          <WalletDropdownBasename />
-          <WalletDropdownLink icon="wallet" href="https://keys.coinbase.com">
-            Wallet
-          </WalletDropdownLink>
-          <WalletDropdownDisconnect />
-        </WalletDropdown>
-      </WalletWrapper>
+      </div>
     )
   }
 
@@ -100,7 +95,7 @@ export function WalletConnectButton() {
                   disabled={isPending}
                   className="w-full flex items-center gap-3 text-left disabled:opacity-50"
                 >
-                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center shrink-0">
                     {icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -116,7 +111,7 @@ export function WalletConnectButton() {
         {/* Coinbase Wallet Extension Instructions */}
         <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 mt-4">
           <div className="flex items-start gap-2">
-            <Smartphone size={18} className="text-blue-600 mt-0.5 flex-shrink-0" />
+            <Smartphone size={18} className="text-blue-600 mt-0.5 shrink-0" />
             <div className="space-y-2">
               <h4 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
                 Don't have a wallet yet?

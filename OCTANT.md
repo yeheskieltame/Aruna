@@ -49,13 +49,18 @@ Example at $10M TVL with 7.8% APY:
 ### Contract Flow
 
 ```
-Vault generates yield
+Vaults (Aave/Morpho) accumulate yield automatically
     ↓
-harvestYield() called
+⚠️ INVESTOR MUST TRIGGER: harvestYield() from frontend ⚠️
+    ├─ Minimum 24-hour interval per vault
+    ├─ Permissionless (anyone can call)
+    └─ Triggers entire distribution flow below
     ↓
 YieldRouter.distributeYield()
-    ├─ Calculate 25% portion
-    ├─ Approve OctantDonationModule
+    ├─ Calculate 70% → investors
+    ├─ Calculate 25% → public goods
+    ├─ Calculate 5% → protocol
+    ├─ Approve OctantDonationModule for 25% amount
     └─ Call octantModule.donate()
         ↓
 OctantDonationModule
@@ -74,6 +79,8 @@ forwardToOctant() (periodic, owner-only)
 Octant v2 Ecosystem
     └─ Distributes to projects via allocation mechanisms
 ```
+
+**⚠️ Critical Note**: Public goods donations do NOT happen automatically. Investors must actively click the "Harvest Yield" button in the investor dashboard to trigger the distribution. This is by design to optimize gas costs and batch distributions.
 
 ### Key Components
 
@@ -435,47 +442,165 @@ Aruna at $10M TVL: $195k/year (recurring)
 
 ## Frontend Integration
 
-### Business Dashboard Display
+### Understanding the Data Flow
 
-Show contribution on business interface:
+**IMPORTANT**: Public goods data only appears after harvest is triggered. The data flow is:
+
+1. Investors deposit to vaults → Vaults generate yield automatically
+2. **Investor clicks "Harvest Yield" button** → Triggers distribution
+3. YieldRouter sends 25% to OctantDonationModule → Data updates
+4. Public goods page displays donation data
+
+**If public goods page shows zero/empty data**, it means harvest hasn't been called yet.
+
+### Investor Dashboard - Harvest Trigger
+
+The harvest button is the critical component:
 
 ```typescript
-const contribution = await octantModule.getBusinessContribution(address);
+import { useHarvestAaveYield, useHarvestMorphoYield } from "@/hooks/useContracts"
+
+const aaveHarvest = useHarvestAaveYield()
+const morphoHarvest = useHarvestMorphoYield()
+
+const handleHarvest = (vault: "aave" | "morpho") => {
+  if (vault === "aave") {
+    aaveHarvest.harvest() // Triggers 70/25/5 distribution
+  } else {
+    morphoHarvest.harvest()
+  }
+}
 
 <Card>
-  <h3>Your Public Goods Impact</h3>
-  <p>Total Contributed: ${formatUSDC(contribution)}</p>
-  <p>Current Epoch: {currentEpoch}</p>
+  <h3>Harvest Vault Yield</h3>
+  <p>⚠️ This triggers automatic public goods donations (25% of yield)</p>
+  <Button onClick={() => handleHarvest("aave")}>Harvest Aave Vault</Button>
+  <Button onClick={() => handleHarvest("morpho")}>Harvest Morpho Vault</Button>
 </Card>
 ```
 
 ### Public Goods Page
 
-Dedicated transparency page:
+Display donations from blockchain with loading states:
 
 ```typescript
-const totalDonated = await octantModule.totalDonated();
-const projects = await octantModule.getSupportedProjects();
-const epochDonations = await octantModule.getEpochDonations(epoch);
+import {
+  useTotalDonations,
+  useCurrentEpochDonations,
+  useSupportedProjects,
+  useCurrentEpoch,
+  useBusinessContribution,
+} from "@/hooks/useContracts"
+
+const { data: totalDonationsData } = useTotalDonations()
+const { data: supportedProjectsData } = useSupportedProjects()
+const { data: currentEpochData } = useCurrentEpoch()
+
+const totalFunded = totalDonationsData ? Number(formatUSDC(totalDonationsData)) : 0
+const supportedProjects = (supportedProjectsData as string[]) || []
+
+// Show warning if no data
+{totalFunded === 0 && (
+  <Alert>
+    <p>No public goods donations yet.</p>
+    <p>Donations are created when investors harvest yield from vaults.</p>
+    <p>👉 Go to Investor Dashboard and click "Harvest Yield"</p>
+  </Alert>
+)}
 
 <Page>
-  <TotalImpact amount={totalDonated} />
-  <ProjectsList projects={projects} />
-  <EpochBreakdown donations={epochDonations} />
+  <TotalImpact amount={totalFunded} />
+  <ProjectsList projects={supportedProjects} />
+  <EpochBreakdown currentEpoch={currentEpochData} />
 </Page>
 ```
 
-### Investor Dashboard
+### Business Dashboard
 
-Show impact alongside returns:
+Show contribution attribution:
 
 ```typescript
+const { data: contribution } = useBusinessContribution(address)
+const contributionAmount = contribution ? Number(formatUSDC(contribution)) : 0
+
 <Card>
-  <h3>Your Impact</h3>
-  <p>Your Yield (70%): ${userYield}</p>
-  <p>Public Goods (25%): ${publicGoodsShare}</p>
-  <p>Total Value: ${userYield + publicGoodsShare}</p>
+  <h3>Your Public Goods Impact</h3>
+  <p>Total Contributed: ${contributionAmount.toFixed(2)}</p>
+  <p className="text-xs text-muted-foreground">
+    From your deposited collateral's yield contribution
+  </p>
 </Card>
+```
+
+### Required Hooks
+
+All hooks consume real blockchain data:
+
+```typescript
+// hooks/useContracts.ts
+
+export function useTotalDonations() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "totalDonated",
+  })
+}
+
+export function useCurrentEpochDonations() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "currentEpochDonations",
+  })
+}
+
+export function useSupportedProjects() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "getSupportedProjects",
+  })
+}
+
+export function useBusinessContribution(address: string | undefined) {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "businessContributions",
+    args: address ? [address as `0x${string}`] : undefined,
+  })
+}
+```
+
+## Contract Addresses
+
+### Base Sepolia Testnet
+
+**Infrastructure Addresses:**
+
+```
+USDC: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
+```
+
+**Deployed Aruna Contracts (Nov 2024):**
+
+```
+OctantDonationModule: 0xEDc5CeE824215cbeEBC73e508558a955cdD75F00
+YieldRouter: 0x124d8F59748860cdD851fB176c7630dD71016e89
+MockOctantDeposits: 0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6
+```
+
+**Note**: For Base Sepolia testnet, we deployed MockOctantDeposits since Octant v2 is not available on testnet. This mock contract simulates Octant's epoch-based donation system for testing.
+
+View on BaseScan:
+- [OctantDonationModule](https://sepolia.basescan.org/address/0xEDc5CeE824215cbeEBC73e508558a955cdD75F00)
+- [YieldRouter](https://sepolia.basescan.org/address/0x124d8F59748860cdD851fB176c7630dD71016e89)
+- [MockOctantDeposits](https://sepolia.basescan.org/address/0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6)
+
+All deployment addresses saved to:
+```
+Aruna-Contract/deployments/84532.json
 ```
 
 ## Deployment Configuration
@@ -492,7 +617,7 @@ OWNER_ADDRESS=<owner_address>
 
 ### Base Sepolia Setup
 
-The deployment script includes:
+The deployment script automatically deploys MockOctantDeposits for testnet:
 
 ```solidity
 // Mock Octant for testnet
@@ -502,7 +627,7 @@ if (config.useTestnet) {
 }
 ```
 
-For mainnet, use actual Octant v2 contract addresses.
+For mainnet deployment, update the script to use actual Octant v2 contract addresses.
 
 ## Testing
 

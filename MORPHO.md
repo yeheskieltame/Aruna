@@ -49,9 +49,15 @@ Withdraw Flow:
   YieldRouter updates user shares
 
 Harvest Flow:
+  **Investor triggers harvestYield() from frontend** (24-hour minimum interval)
   Calculate yield: MetaMorpho value - total shares
   Withdraw yield from MetaMorpho
-  Distribute via YieldRouter (70/25/5)
+  Distribute via YieldRouter:
+    - 70% → investors (proportional to shares)
+    - 25% → public goods via OctantDonationModule
+    - 5% → protocol treasury
+
+**⚠️ Important**: Yield must be manually harvested via the "Harvest Yield" button in the investor dashboard. Public goods donations only occur AFTER harvest is triggered.
 ```
 
 ## Interfaces
@@ -386,31 +392,52 @@ metaMorphoVault.deposit(assets, address(this));
 
 ## Contract Addresses
 
-### Base Sepolia Configuration
+### Base Sepolia Testnet
 
-Required environment variable:
+**Infrastructure Addresses:**
+
+```
+USDC: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
+```
+
+**Deployed Aruna Contracts (Nov 2024):**
+
+```
+MorphoVaultAdapter: 0x16dea7eE228c0781938E6869c07ceb2EEA7bd564
+MockMetaMorpho: 0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025
+```
+
+**Note**: For Base Sepolia testnet, we deployed MockMetaMorpho since there are no production MetaMorpho vaults available on the testnet. This mock vault simulates MetaMorpho behavior with an 8.2% APY for testing purposes.
+
+View on BaseScan:
+- [MorphoVaultAdapter](https://sepolia.basescan.org/address/0x16dea7eE228c0781938E6869c07ceb2EEA7bd564)
+- [MockMetaMorpho](https://sepolia.basescan.org/address/0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025)
+
+### Deployment Configuration
+
+When deploying, set environment variable:
 
 ```bash
-METAMORPHO_VAULT=<metamorpho_usdc_vault_address>
+METAMORPHO_VAULT=DEPLOY_MOCK_METAMORPHO
+```
+
+This triggers automatic MockMetaMorpho deployment for testing.
+
+### For Mainnet Deployment
+
+To use a real MetaMorpho vault:
+
+```bash
+METAMORPHO_VAULT=<actual_metamorpho_vault_address>
 ```
 
 To find MetaMorpho vaults:
 1. Visit https://app.morpho.org
-2. Select "Base Sepolia" network
+2. Select target network
 3. Filter for USDC vaults
 4. Copy vault address
 
-Alternatively, deploy your own vault using MetaMorpho Factory.
-
-### Known Addresses
-
-```
-USDC (Base Sepolia): 0x036CbD53842c5426634e7929541eC2318f3dCF7e
-```
-
-### After Deployment
-
-Addresses saved to:
+All deployment addresses saved to:
 ```
 Aruna-Contract/deployments/84532.json
 ```
@@ -495,6 +522,48 @@ cast call <MORPHO_VAULT_ADAPTER> "asset()" --rpc-url https://sepolia.base.org
 # Check current MetaMorpho shares
 cast call <MORPHO_VAULT_ADAPTER> "getMetaMorphoShares()" --rpc-url https://sepolia.base.org
 ```
+
+## Frontend Integration
+
+### Using Harvest Functionality
+
+Investors trigger yield harvesting from the investor dashboard using the `useHarvestMorphoYield()` hook:
+
+```typescript
+import { useHarvestMorphoYield } from "@/hooks/useContracts"
+
+const { harvest, isPending, isConfirming, isSuccess, hash, error } = useHarvestMorphoYield()
+
+// Trigger harvest
+const handleHarvest = () => {
+  harvest() // Calls harvestYield() on MorphoVaultAdapter
+}
+
+// Transaction states:
+// - isPending: Waiting for user wallet confirmation
+// - isConfirming: Transaction submitted, waiting for confirmation
+// - isSuccess: Harvest complete, yield distributed
+// - hash: Transaction hash for BaseScan verification
+```
+
+**Harvest Requirements:**
+- Minimum 24-hour interval between harvests per vault
+- Anyone can call harvest (permissionless)
+- Transaction automatically triggers 70/25/5 distribution
+- Public goods donations created immediately upon harvest
+- Independent from Aave vault (each can be harvested separately)
+
+### Transaction Flow
+
+The frontend displays a multi-step transaction modal:
+1. **Confirming** - User confirms transaction in wallet
+2. **Pending** - Transaction submitted to blockchain
+3. **Success** - Yield distributed, shows transaction hash
+
+Users can verify the harvest transaction on BaseScan to see:
+- Yield amount withdrawn from MetaMorpho
+- Distribution to YieldRouter
+- Allocation to investors, public goods, and protocol
 
 ## Performance Metrics
 

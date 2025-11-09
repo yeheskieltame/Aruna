@@ -51,7 +51,8 @@ Every dollar of yield generated is distributed automatically:
 - Users choose their preferred risk/return profile
 
 ### Automated Public Goods Funding
-- 25% of yield routed to Octant v2 automatically
+- Investor-triggered harvest distributes 25% of yield to Octant v2
+- Harvest interval: once per 24 hours per vault
 - Per-business contribution tracking
 - Per-epoch donation aggregation
 - Transparent on-chain events
@@ -66,19 +67,23 @@ Every dollar of yield generated is distributed automatically:
 
 ## Architecture
 
-The protocol consists of six primary smart contracts deployed on Base Sepolia:
+The protocol consists of five primary smart contracts deployed on Base Sepolia:
 
 **Core Contracts:**
-- `ArunaCore.sol` - Main contract managing invoice commitments (ERC-721)
-- `YieldRouter.sol` - Distributes yield according to 70/25/5 model
-- `GrantDistributor.sol` - Manages instant grants and reputation
+- `ArunaCore.sol` - Main contract managing invoice commitments (ERC-721), grants, and reputation
+- `YieldRouter.sol` - Distributes harvested yield according to 70/25/5 model
+- `OctantDonationModule.sol` - Routes 25% of yield to Octant v2 for public goods allocation
 
-**Vault Adapters:**
-- `AaveVaultAdapter.sol` - ERC-4626 wrapper for Aave v3 pools
-- `MorphoVaultAdapter.sol` - ERC-4626 wrapper for Morpho MetaMorpho vaults
+**ERC-4626 Vault Adapters:**
+- `AaveVaultAdapter.sol` - Wraps Aave v3 pools with automatic yield harvesting
+- `MorphoVaultAdapter.sol` - Wraps Morpho MetaMorpho vaults with yield distribution
 
-**Public Goods:**
-- `OctantDonationModule.sol` - Routes yield to Octant v2 for public goods allocation
+**Key Flow:**
+1. Investors deposit USDC to vault adapters → Vaults supply to Aave/Morpho
+2. Yield accumulates automatically in underlying protocols
+3. **Investor triggers `harvestYield()`** → Vaults withdraw yield
+4. YieldRouter distributes: 70% investors, 25% public goods (OctantDonationModule), 5% protocol
+5. Public goods data updates on-chain for transparency
 
 ## Technical Documentation
 
@@ -205,8 +210,9 @@ Monthly invoices of $50,000 with 60-day payment terms. Submits invoices to Aruna
 ### DeFi Investor
 Deposits $100,000 USDC seeking yield with impact:
 - Chooses between Aave (6.5% APY) or Morpho (8.2% APY)
+- Triggers yield harvest (minimum 24-hour intervals per vault)
 - Receives 70% of yield (5.46% effective APY on Morpho)
-- Contributes 25% to Ethereum public goods automatically
+- Contributes 25% to Ethereum public goods via harvest trigger
 - Maintains full liquidity, no lock-up
 
 ### Public Goods Project

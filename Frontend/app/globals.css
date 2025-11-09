@@ -151,3 +151,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom Wallet Styling - High Contrast Address Display */
+@layer components {
+  /* Ensure text has maximum contrast */
+  .text-foreground {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* High contrast background for wallet address */
+  .wallet-address-display {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.15));
+    border: 2px solid hsl(var(--primary) / 0.4);
+    color: hsl(var(--foreground));
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .dark .wallet-address-display {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.25));
+    border-color: hsl(var(--primary) / 0.5);
+  }
+}

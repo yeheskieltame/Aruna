@@ -165,26 +165,26 @@ AAVE_AUSDC: "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB"
 ```
 
 **Deployed Aruna Protocol Contracts (Base Sepolia):**
-Deployment Date: November 8, 2024
+Deployment Date: November 9, 2024
 Deployer: `0x77c4a1cD22005b67Eb9CcEaE7E9577188d7Bca82`
 
 ```typescript
-ArunaCore: "0x5ee04F6377e03b47F5e932968e87ad5599664Cf2"
-AaveVaultAdapter: "0x8E9F6B3230800B781e461fce5F7F118152FeD969"
-MorphoVaultAdapter: "0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d"
-YieldRouter: "0x9721ee37de0F289A99f8EA2585293575AE2654CC"
-OctantDonationModule: "0xB745282F0FCe7a669F9EbD50B403e895090b1b24"
-MockOctantDeposits: "0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23" // Testnet Only
-MockMetaMorpho: "0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19" // Testnet Only
+ArunaCore: "0xE60dcA6869F072413557769bDFd4e30ceFa6997f"
+AaveVaultAdapter: "0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905"
+MorphoVaultAdapter: "0x16dea7eE228c0781938E6869c07ceb2EEA7bd564"
+YieldRouter: "0x124d8F59748860cdD851fB176c7630dD71016e89"
+OctantDonationModule: "0xEDc5CeE824215cbeEBC73e508558a955cdD75F00"
+MockOctantDeposits: "0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6" // Testnet Only
+MockMetaMorpho: "0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025" // Testnet Only
 ```
 
 All addresses are saved to `Aruna-Contract/deployments/84532.json` and verified on-chain.
 
 **View on BaseScan:**
-- [ArunaCore](https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2)
-- [AaveVaultAdapter](https://sepolia.basescan.org/address/0x8E9F6B3230800B781e461fce5F7F118152FeD969)
-- [MorphoVaultAdapter](https://sepolia.basescan.org/address/0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d)
-- [YieldRouter](https://sepolia.basescan.org/address/0x9721ee37de0F289A99f8EA2585293575AE2654CC)
+- [ArunaCore](https://sepolia.basescan.org/address/0xE60dcA6869F072413557769bDFd4e30ceFa6997f)
+- [AaveVaultAdapter](https://sepolia.basescan.org/address/0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905)
+- [MorphoVaultAdapter](https://sepolia.basescan.org/address/0x16dea7eE228c0781938E6869c07ceb2EEA7bd564)
+- [YieldRouter](https://sepolia.basescan.org/address/0x124d8F59748860cdD851fB176c7630dD71016e89)
 
 ## Protocol Configuration
 
@@ -214,13 +214,15 @@ Key configuration is centralized in `Frontend/lib/config.ts`:
 - **Aave v3 Integration**: ERC-4626 compliant vault using ATokenVault interface
 - **Morpho V2 Integration**: ERC-4626 compliant vault with safe adapter wiring
 - Support for USDC, DAI, and USDT tokens
-- Automatic yield harvesting and distribution
+- **Investor-triggered yield harvesting**: `harvestYield()` function per vault
+- Harvest interval: once per 24 hours per vault (independent)
 - Real-time yield tracking per user
 
 ### Yield Distribution (70/25/5 Model)
 - **70% to Investors**: Proportional to vault shares held
-- **25% to Public Goods**: Automatic routing to Octant v2
+- **25% to Public Goods**: Triggered by harvest, routed to Octant v2
 - **5% to Protocol**: Treasury for maintenance and development
+- **Distribution Flow**: Harvest → YieldRouter → OctantDonationModule → Octant v2
 
 ### User Interfaces
 - Business dashboard for invoice management and reputation tracking
@@ -229,7 +231,8 @@ Key configuration is centralized in `Frontend/lib/config.ts`:
 
 ### Advanced Features
 - **Withdrawal Functions**: `withdrawFromAaveVault()`, `withdrawFromMorphoVault()`
-- **Yield Claiming**: `claimYield()` for accumulated yield
+- **Yield Harvesting**: `harvestYield()` per vault with 24-hour interval enforcement
+- **Public Goods Trigger**: Harvest automatically distributes 25% to Octant v2
 - **No Lock-up Period**: Users can withdraw principal anytime
 - **NFT Transfer Restrictions**: Invoices can only be transferred after settlement
 - **Emergency Controls**: Pausable contracts with owner emergency functions
@@ -273,10 +276,22 @@ This eliminates the old "insufficient grant reserves" error from V1.
 - `withdrawFromMorphoVault(amount)` burns shares proportionally
 - No lock-up period - withdraw anytime
 
-**Yield Claiming:**
-- `getUserYield(address)` returns claimable yield amount
-- `claimYield()` transfers accumulated yield to caller
-- Yield calculated from vault share appreciation
+**Yield Harvesting:**
+- `harvestYield()` on AaveVaultAdapter - triggers Aave vault yield distribution
+- `harvestYield()` on MorphoVaultAdapter - triggers Morpho vault yield distribution
+- Both vaults have independent 24-hour cooldown periods
+- Harvest withdraws yield and distributes via YieldRouter (70/25/5 split)
+- Investors receive their 70% portion automatically
+- Public goods receive 25% via OctantDonationModule
+
+**⚠️ Critical Note on Public Goods Data:**
+Public goods donations (totalDonated, currentEpochDonations, etc.) will be ZERO until the first harvest is triggered. The data flow requires:
+1. Investors deposit to vaults → Yield accumulates in Aave/Morpho
+2. Investor clicks "Harvest Yield" button → Triggers `harvestYield()`
+3. YieldRouter distributes → 25% sent to OctantDonationModule
+4. Public goods page displays donation data
+
+If the public goods page shows empty/zero data, it simply means harvest hasn't been called yet.
 
 ### Reputation System
 
@@ -298,6 +313,83 @@ Both `AaveVaultAdapter` and `MorphoVaultAdapter` implement:
 - Proper `totalAssets()` accounting via underlying protocol
 - `convertToShares()` and `convertToAssets()` helpers
 
+### Frontend Harvest Implementation
+
+**Harvest Hooks (hooks/useContracts.ts):**
+
+```typescript
+export function useHarvestAaveYield() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const harvest = () => {
+    writeContract({
+      address: CONTRACTS.AAVE_VAULT.address as `0x${string}`,
+      abi: ABIS.AAVE_VAULT,
+      functionName: "harvestYield",
+      gas: 500000n,
+    })
+  }
+
+  return { harvest, isPending, isConfirming, isSuccess, hash, error }
+}
+
+export function useHarvestMorphoYield() {
+  // Similar implementation for Morpho vault
+}
+```
+
+**Investor Dashboard Integration (components/investor-dashboard.tsx):**
+
+```typescript
+const aaveHarvest = useHarvestAaveYield()
+const morphoHarvest = useHarvestMorphoYield()
+
+const handleHarvest = (vault: "aave" | "morpho") => {
+  if (vault === "aave") {
+    aaveHarvest.harvest()
+  } else {
+    morphoHarvest.harvest()
+  }
+}
+
+// UI shows:
+// - Harvest button for each vault
+// - 24-hour cooldown indicator
+// - Visual breakdown of 70/25/5 distribution
+// - Transaction modal (confirming → pending → success)
+```
+
+**Public Goods Data Hooks:**
+
+```typescript
+export function useTotalDonations() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "totalDonated",
+  })
+}
+
+export function useSupportedProjects() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "getSupportedProjects",
+  })
+}
+
+export function useCurrentEpochDonations() {
+  return useReadContract({
+    address: CONTRACTS.OCTANT_MODULE.address,
+    abi: ABIS.OCTANT_MODULE,
+    functionName: "currentEpochDonations",
+  })
+}
+```
+
+All public goods data is fetched directly from blockchain via these hooks.
+
 ## Environment Setup
 
 ### Required Environment Variables
@@ -309,12 +401,12 @@ NEXT_PUBLIC_CHAIN_ID=84532
 NEXT_PUBLIC_ONCHAINKIT_API_KEY=<your_onchainkit_api_key>
 
 # Deployed Contract Addresses (Base Sepolia - Chain ID: 84532)
-# Deployed: 2024-11-08
-NEXT_PUBLIC_ARUNA_CORE=0x5ee04F6377e03b47F5e932968e87ad5599664Cf2
-NEXT_PUBLIC_AAVE_VAULT=0x8E9F6B3230800B781e461fce5F7F118152FeD969
-NEXT_PUBLIC_MORPHO_VAULT=0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d
-NEXT_PUBLIC_YIELD_ROUTER=0x9721ee37de0F289A99f8EA2585293575AE2654CC
-NEXT_PUBLIC_OCTANT_MODULE=0xB745282F0FCe7a669F9EbD50B403e895090b1b24
+# Deployed: 2024-11-09
+NEXT_PUBLIC_ARUNA_CORE=0xE60dcA6869F072413557769bDFd4e30ceFa6997f
+NEXT_PUBLIC_AAVE_VAULT=0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905
+NEXT_PUBLIC_MORPHO_VAULT=0x16dea7eE228c0781938E6869c07ceb2EEA7bd564
+NEXT_PUBLIC_YIELD_ROUTER=0x124d8F59748860cdD851fB176c7630dD71016e89
+NEXT_PUBLIC_OCTANT_MODULE=0xEDc5CeE824215cbeEBC73e508558a955cdD75F00
 ```
 
 **Smart Contracts** - Create `.env` in Aruna-Contract/:
