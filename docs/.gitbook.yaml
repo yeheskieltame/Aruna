@@ -3,3 +3,7 @@ root: ./
 structure:
   readme: README.md
   summary: SUMMARY.md
+
+# Enable GitBook features
+features:
+  mermaid: true
