@@ -1,7 +1,7 @@
 # Aruna Protocol - Base Sepolia Deployment Summary
 
 ## Deployment Date
-**November 8, 2024** - Successfully Deployed & Verified ✅
+**November 9, 2024** - Successfully Deployed & Verified ✅
 
 ## Network Information
 - **Network**: Base Sepolia Testnet
@@ -14,21 +14,21 @@
 
 ### Core Contracts
 ```
-ArunaCore:           0x5ee04F6377e03b47F5e932968e87ad5599664Cf2
-YieldRouter:         0x9721ee37de0F289A99f8EA2585293575AE2654CC
-OctantDonationModule: 0xB745282F0FCe7a669F9EbD50B403e895090b1b24
+ArunaCore:           0xE60dcA6869F072413557769bDFd4e30ceFa6997f
+YieldRouter:         0x124d8F59748860cdD851fB176c7630dD71016e89
+OctantDonationModule: 0xEDc5CeE824215cbeEBC73e508558a955cdD75F00
 ```
 
 ### Vault Adapters
 ```
-AaveVaultAdapter:    0x8E9F6B3230800B781e461fce5F7F118152FeD969
-MorphoVaultAdapter:  0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d
+AaveVaultAdapter:    0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905
+MorphoVaultAdapter:  0x16dea7eE228c0781938E6869c07ceb2EEA7bd564
 ```
 
 ### Mock Contracts (Testnet Only)
 ```
-MockOctantDeposits:  0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23
-MockMetaMorpho:      0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19
+MockOctantDeposits:  0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6
+MockMetaMorpho:      0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025
 ```
 
 ### External Contracts (Base Sepolia)
@@ -48,11 +48,11 @@ Protocol Treasury:   0x77c4a1cD22005b67Eb9CcEaE7E9577188d7Bca82
 
 Verify your contracts on BaseScan:
 
-- [ArunaCore](https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2)
-- [YieldRouter](https://sepolia.basescan.org/address/0x9721ee37de0F289A99f8EA2585293575AE2654CC)
-- [AaveVaultAdapter](https://sepolia.basescan.org/address/0x8E9F6B3230800B781e461fce5F7F118152FeD969)
-- [MorphoVaultAdapter](https://sepolia.basescan.org/address/0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d)
-- [OctantDonationModule](https://sepolia.basescan.org/address/0xB745282F0FCe7a669F9EbD50B403e895090b1b24)
+- [ArunaCore](https://sepolia.basescan.org/address/0xE60dcA6869F072413557769bDFd4e30ceFa6997f)
+- [YieldRouter](https://sepolia.basescan.org/address/0x124d8F59748860cdD851fB176c7630dD71016e89)
+- [AaveVaultAdapter](https://sepolia.basescan.org/address/0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905)
+- [MorphoVaultAdapter](https://sepolia.basescan.org/address/0x16dea7eE228c0781938E6869c07ceb2EEA7bd564)
+- [OctantDonationModule](https://sepolia.basescan.org/address/0xEDc5CeE824215cbeEBC73e508558a955cdD75F00)
 
 ## ABI Files
 
@@ -79,27 +79,27 @@ Update `Frontend/lib/contracts.ts` with Base Sepolia addresses:
 export const CONTRACTS = {
   // Aruna Protocol Contracts
   ARUNA_CORE: {
-    address: "0x5ee04F6377e03b47F5e932968e87ad5599664Cf2",
+    address: "0xE60dcA6869F072413557769bDFd4e30ceFa6997f",
   },
   AAVE_VAULT: {
-    address: "0x8E9F6B3230800B781e461fce5F7F118152FeD969",
+    address: "0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905",
   },
   MORPHO_VAULT: {
-    address: "0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d",
+    address: "0x16dea7eE228c0781938E6869c07ceb2EEA7bd564",
   },
   YIELD_ROUTER: {
-    address: "0x9721ee37de0F289A99f8EA2585293575AE2654CC",
+    address: "0x124d8F59748860cdD851fB176c7630dD71016e89",
   },
   OCTANT_MODULE: {
-    address: "0xB745282F0FCe7a669F9EbD50B403e895090b1b24",
+    address: "0xEDc5CeE824215cbeEBC73e508558a955cdD75F00",
   },
-  
+
   // Base Sepolia USDC
   USDC: {
     address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
     decimals: 6,
   },
-  
+
   // Aave v3 on Base Sepolia
   AAVE_POOL: {
     address: "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
@@ -107,13 +107,13 @@ export const CONTRACTS = {
   AAVE_AUSDC: {
     address: "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
   },
-  
+
   // Mock contracts (testnet only)
   MOCK_OCTANT: {
-    address: "0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23",
+    address: "0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6",
   },
   MOCK_METAMORPHO: {
-    address: "0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19",
+    address: "0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025",
   },
 }
 ```
@@ -141,11 +141,11 @@ NEXT_PUBLIC_CHAIN_ID=84532
 NEXT_PUBLIC_BASE_SEPOLIA_RPC=https://sepolia.base.org
 
 # Contract Addresses
-NEXT_PUBLIC_ARUNA_CORE=0x5ee04F6377e03b47F5e932968e87ad5599664Cf2
-NEXT_PUBLIC_AAVE_VAULT=0x8E9F6B3230800B781e461fce5F7F118152FeD969
-NEXT_PUBLIC_MORPHO_VAULT=0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d
-NEXT_PUBLIC_YIELD_ROUTER=0x9721ee37de0F289A99f8EA2585293575AE2654CC
-NEXT_PUBLIC_OCTANT_MODULE=0xB745282F0FCe7a669F9EbD50B403e895090b1b24
+NEXT_PUBLIC_ARUNA_CORE=0xE60dcA6869F072413557769bDFd4e30ceFa6997f
+NEXT_PUBLIC_AAVE_VAULT=0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905
+NEXT_PUBLIC_MORPHO_VAULT=0x16dea7eE228c0781938E6869c07ceb2EEA7bd564
+NEXT_PUBLIC_YIELD_ROUTER=0x124d8F59748860cdD851fB176c7630dD71016e89
+NEXT_PUBLIC_OCTANT_MODULE=0xEDc5CeE824215cbeEBC73e508558a955cdD75F00
 NEXT_PUBLIC_USDC=0x036CbD53842c5426634e7929541eC2318f3dCF7e
 ```
 
@@ -244,10 +244,10 @@ All contracts have been verified on-chain:
 **Verification Commands:**
 ```bash
 # Verify bytecode on-chain
-cast code 0x5ee04F6377e03b47F5e932968e87ad5599664Cf2 --rpc-url https://sepolia.base.org
+cast code 0xE60dcA6869F072413557769bDFd4e30ceFa6997f --rpc-url https://sepolia.base.org
 
 # Verify owner
-cast call 0x5ee04F6377e03b47F5e932968e87ad5599664Cf2 "owner()" --rpc-url https://sepolia.base.org
+cast call 0xE60dcA6869F072413557769bDFd4e30ceFa6997f "owner()" --rpc-url https://sepolia.base.org
 # Returns: 0x00000000000000000000000077c4a1cd22005b67eb9cceae7e9577188d7bca82 ✅
 ```
 
@@ -272,7 +272,7 @@ cd Aruna-Contract
 
 # Verify ArunaCore
 forge verify-contract \
-  0x5ee04F6377e03b47F5e932968e87ad5599664Cf2 \
+  0xE60dcA6869F072413557769bDFd4e30ceFa6997f \
   src/ArunaCore.sol:ArunaCore \
   --chain 84532 \
   --etherscan-api-key $BASESCAN_API_KEY \
@@ -299,7 +299,7 @@ forge verify-contract \
 
 **Deployment Status**: ✅ SUCCESSFUL & VERIFIED
 
-**Deployed On**: November 8, 2024
+**Deployed On**: November 9, 2024
 
 **Ready for**: Frontend Integration & Testing
 
@@ -309,17 +309,17 @@ forge verify-contract \
 
 ## Quick Reference
 
-**Main Entry Point**: [ArunaCore on BaseScan](https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2)
+**Main Entry Point**: [ArunaCore on BaseScan](https://sepolia.basescan.org/address/0xE60dcA6869F072413557769bDFd4e30ceFa6997f)
 
 **All Contract Addresses**:
 ```json
 {
-  "ArunaCore": "0x5ee04F6377e03b47F5e932968e87ad5599664Cf2",
-  "AaveVaultAdapter": "0x8E9F6B3230800B781e461fce5F7F118152FeD969",
-  "MorphoVaultAdapter": "0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d",
-  "YieldRouter": "0x9721ee37de0F289A99f8EA2585293575AE2654CC",
-  "OctantDonationModule": "0xB745282F0FCe7a669F9EbD50B403e895090b1b24",
-  "MockOctantDeposits": "0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23",
-  "MockMetaMorpho": "0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19"
+  "ArunaCore": "0xE60dcA6869F072413557769bDFd4e30ceFa6997f",
+  "AaveVaultAdapter": "0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905",
+  "MorphoVaultAdapter": "0x16dea7eE228c0781938E6869c07ceb2EEA7bd564",
+  "YieldRouter": "0x124d8F59748860cdD851fB176c7630dD71016e89",
+  "OctantDonationModule": "0xEDc5CeE824215cbeEBC73e508558a955cdD75F00",
+  "MockOctantDeposits": "0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6",
+  "MockMetaMorpho": "0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025"
 }
 ```

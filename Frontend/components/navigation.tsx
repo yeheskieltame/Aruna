@@ -1,18 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import {
-  ConnectWallet,
-  Wallet,
-  WalletDropdown,
-  WalletDropdownBasename,
-  WalletDropdownDisconnect,
-  WalletDropdownLink,
-} from "@coinbase/onchainkit/wallet"
-import { Address, Avatar, Name, Identity, EthBalance } from "@coinbase/onchainkit/identity"
 import { Menu, X } from "lucide-react"
 import { useState } from "react"
 import { useAccount } from "wagmi"
+import { WalletConnectButton } from "@/components/wallet-connect-button"
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -53,27 +45,9 @@ export default function Navigation() {
             )}
           </div>
 
-          {/* Connect Wallet with OnchainKit */}
+          {/* Connect Wallet */}
           <div className="hidden md:block">
-            <Wallet>
-              <ConnectWallet>
-                <Avatar className="h-6 w-6" />
-                <Name />
-              </ConnectWallet>
-              <WalletDropdown>
-                <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-                  <Avatar />
-                  <Name />
-                  <Address />
-                  <EthBalance />
-                </Identity>
-                <WalletDropdownBasename />
-                <WalletDropdownLink icon="wallet" href="https://keys.coinbase.com">
-                  Wallet
-                </WalletDropdownLink>
-                <WalletDropdownDisconnect />
-              </WalletDropdown>
-            </Wallet>
+            <WalletConnectButton />
           </div>
 
           {/* Mobile Menu Button */}
@@ -125,25 +99,7 @@ export default function Navigation() {
               </>
             )}
             <div className="pt-2">
-              <Wallet>
-                <ConnectWallet>
-                  <Avatar className="h-6 w-6" />
-                  <Name />
-                </ConnectWallet>
-                <WalletDropdown>
-                  <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-                    <Avatar />
-                    <Name />
-                    <Address />
-                    <EthBalance />
-                  </Identity>
-                  <WalletDropdownBasename />
-                  <WalletDropdownLink icon="wallet" href="https://keys.coinbase.com">
-                    Wallet
-                  </WalletDropdownLink>
-                  <WalletDropdownDisconnect />
-                </WalletDropdown>
-              </Wallet>
+              <WalletConnectButton />
             </div>
           </div>
         )}

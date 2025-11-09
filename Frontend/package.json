@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
     "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "eslint .",
-    "start": "next start"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next node_modules",
+    "reinstall": "pnpm clean && pnpm install",
+    "test:build": "pnpm build && pnpm start"
   },
   "dependencies": {
     "@coinbase/onchainkit": "^1.1.2",

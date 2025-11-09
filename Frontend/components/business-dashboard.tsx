@@ -8,12 +8,26 @@ import { useAccount } from "wagmi"
 import { useUserReputation, useUserInvoices, useInvoiceDetails, useSettleInvoice, formatUSDC } from "@/hooks/useContracts"
 import { useState, useEffect } from "react"
 
-export default function BusinessDashboard() {
+interface BusinessDashboardProps {
+  refreshTrigger?: number
+}
+
+export default function BusinessDashboard({ refreshTrigger }: BusinessDashboardProps = {}) {
   const { address } = useAccount()
   const { data: reputationData } = useUserReputation(address)
   const { data: invoiceIds, refetch: refetchInvoices } = useUserInvoices(address)
   const { settle, isPending: isSettling, isSuccess: isSettled } = useSettleInvoice()
   const [settlingId, setSettlingId] = useState<bigint | null>(null)
+
+  // Refetch when refresh trigger changes
+  useEffect(() => {
+    if (refreshTrigger && refreshTrigger > 0) {
+      console.log("🔄 Refreshing invoices from blockchain in 2s...")
+      setTimeout(() => {
+        refetchInvoices()
+      }, 2000)
+    }
+  }, [refreshTrigger, refetchInvoices])
 
   // Refetch invoices when settlement succeeds
   useEffect(() => {

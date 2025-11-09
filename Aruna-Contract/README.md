@@ -230,14 +230,14 @@ forge script script/DeployAruna.s.sol:VerifyContracts --rpc-url $RPC_URL --priva
 - **Aave v3 Pool**: `0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b`
 - **Aave aUSDC**: `0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB`
 
-**Deployed Aruna Contracts (November 8, 2024):**
-- **ArunaCore**: `0x5ee04F6377e03b47F5e932968e87ad5599664Cf2` ([View on BaseScan](https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2))
-- **AaveVaultAdapter**: `0x8E9F6B3230800B781e461fce5F7F118152FeD969` ([View on BaseScan](https://sepolia.basescan.org/address/0x8E9F6B3230800B781e461fce5F7F118152FeD969))
-- **MorphoVaultAdapter**: `0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d` ([View on BaseScan](https://sepolia.basescan.org/address/0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d))
-- **YieldRouter**: `0x9721ee37de0F289A99f8EA2585293575AE2654CC` ([View on BaseScan](https://sepolia.basescan.org/address/0x9721ee37de0F289A99f8EA2585293575AE2654CC))
-- **OctantDonationModule**: `0xB745282F0FCe7a669F9EbD50B403e895090b1b24` ([View on BaseScan](https://sepolia.basescan.org/address/0xB745282F0FCe7a669F9EbD50B403e895090b1b24))
-- **MockOctantDeposits**: `0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23` (Testnet Only)
-- **MockMetaMorpho**: `0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19` (Testnet Only)
+**Deployed Aruna Contracts (November 9, 2024):**
+- **ArunaCore**: `0xE60dcA6869F072413557769bDFd4e30ceFa6997f` ([View on BaseScan](https://sepolia.basescan.org/address/0xE60dcA6869F072413557769bDFd4e30ceFa6997f))
+- **AaveVaultAdapter**: `0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905` ([View on BaseScan](https://sepolia.basescan.org/address/0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905))
+- **MorphoVaultAdapter**: `0x16dea7eE228c0781938E6869c07ceb2EEA7bd564` ([View on BaseScan](https://sepolia.basescan.org/address/0x16dea7eE228c0781938E6869c07ceb2EEA7bd564))
+- **YieldRouter**: `0x124d8F59748860cdD851fB176c7630dD71016e89` ([View on BaseScan](https://sepolia.basescan.org/address/0x124d8F59748860cdD851fB176c7630dD71016e89))
+- **OctantDonationModule**: `0xEDc5CeE824215cbeEBC73e508558a955cdD75F00` ([View on BaseScan](https://sepolia.basescan.org/address/0xEDc5CeE824215cbeEBC73e508558a955cdD75F00))
+- **MockOctantDeposits**: `0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6` (Testnet Only)
+- **MockMetaMorpho**: `0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025` (Testnet Only)
 
 ### Mainnet Configuration (Base)
 

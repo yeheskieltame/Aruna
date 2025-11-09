@@ -9,15 +9,17 @@ import { Plus } from "lucide-react"
 
 export default function BusinessPage() {
   const [showForm, setShowForm] = useState(false)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleInvoiceSubmitted = () => {
-    // Close form after successful submission
+    console.log("✅ Invoice submitted - triggering dashboard refresh")
     setShowForm(false)
+    setRefreshTrigger(Date.now())
   }
 
   return (
     <main className="min-h-screen bg-background">
-      <Navigation isConnected={true} />
+      <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mb-8">
@@ -32,7 +34,7 @@ export default function BusinessPage() {
               Submit New Invoice
             </Button>
 
-            <BusinessDashboard />
+            <BusinessDashboard refreshTrigger={refreshTrigger} />
           </div>
         ) : (
           <div className="space-y-6">

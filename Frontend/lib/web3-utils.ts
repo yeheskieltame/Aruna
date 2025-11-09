@@ -1,5 +1,9 @@
 import { ethers } from "ethers"
-import { CONTRACTS, ERC20_ABI, AAVE_POOL_ABI, Aruna_ABI } from "./contracts"
+import { CONTRACTS, ERC20_ABI, Aruna_ABI } from "./contracts"
+
+// Note: This file uses legacy ethers.js patterns.
+// Current implementation uses Wagmi hooks instead.
+// AAVE_POOL_ABI was removed - use ABIS.AAVE_VAULT from contracts.ts if needed.
 
 export async function getProvider() {
   if (typeof window !== "undefined" && window.ethereum) {
@@ -25,34 +29,12 @@ export async function getUserBalance(userAddress: string): Promise<string> {
   }
 }
 
-export async function approveUSDC(amount: string): Promise<string> {
-  try {
-    const signer = await getSigner()
-    const contract = new ethers.Contract(CONTRACTS.USDC.address, ERC20_ABI, signer)
-    const amountWei = ethers.parseUnits(amount, CONTRACTS.USDC.decimals)
-
-    const tx = await contract.approve(CONTRACTS.AAVE_POOL.address, amountWei)
-    const receipt = await tx.wait()
-    return receipt?.transactionHash || ""
-  } catch (error) {
-    console.error("Error approving USDC:", error)
-    throw error
-  }
+export async function approveUSDC(): Promise<string> {
+  throw new Error("This function is deprecated. Use Wagmi hooks from useContracts.ts instead.")
 }
 
-export async function depositToAave(amount: string, userAddress: string): Promise<string> {
-  try {
-    const signer = await getSigner()
-    const contract = new ethers.Contract(CONTRACTS.AAVE_POOL.address, AAVE_POOL_ABI, signer)
-    const amountWei = ethers.parseUnits(amount, CONTRACTS.USDC.decimals)
-
-    const tx = await contract.supply(CONTRACTS.USDC.address, amountWei, userAddress, 0)
-    const receipt = await tx.wait()
-    return receipt?.transactionHash || ""
-  } catch (error) {
-    console.error("Error depositing to Aave:", error)
-    throw error
-  }
+export async function depositToAave(): Promise<string> {
+  throw new Error("This function is deprecated. Use Wagmi hooks from useContracts.ts instead.")
 }
 
 export async function submitInvoice(

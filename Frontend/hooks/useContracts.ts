@@ -1,6 +1,7 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { CONTRACTS, ABIS } from "@/lib/contracts"
 import { parseUnits, formatUnits } from "viem"
+import { useEffect } from "react"
 
 // Hook for reading USDC balance
 export function useUSDCBalance(address?: `0x${string}`) {
@@ -18,7 +19,33 @@ export function useUSDCBalance(address?: `0x${string}`) {
 // Hook for approving USDC
 export function useApproveUSDC() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash, // Only run when we have a hash
+      refetchInterval: 1000, // Poll every second instead of subscribing
+      retry: 3, // Retry 3 times on failure
+    },
+  })
+
+  // Debug logging
+  useEffect(() => {
+    if (hash || isPending || isConfirming || isSuccess || error) {
+      console.log("🔄 Approval status update:", {
+        hash: hash ? hash.substring(0, 10) + "..." : "none",
+        fullHash: hash,
+        isPending,
+        isConfirming,
+        isSuccess,
+        error: error?.message
+      })
+
+      // Log BaseScan link when hash appears
+      if (hash && !isSuccess) {
+        console.log(`🔗 Check transaction on BaseScan: https://sepolia.basescan.org/tx/${hash}`)
+      }
+    }
+  }, [hash, isPending, isConfirming, isSuccess, error])
 
   const approve = (spender: `0x${string}`, amount: string) => {
     // Validate amount before parsing
@@ -29,14 +56,31 @@ export function useApproveUSDC() {
 
     try {
       const parsedAmount = parseUnits(amount, CONTRACTS.USDC.decimals)
+
+      console.log("✅ Approving USDC:", {
+        token: CONTRACTS.USDC.address,
+        spender,
+        amount,
+        parsedAmount: parsedAmount.toString(),
+      })
+
       writeContract({
         address: CONTRACTS.USDC.address as `0x${string}`,
         abi: ABIS.ERC20,
         functionName: "approve",
         args: [spender, parsedAmount],
+        gas: 100000n, // Set explicit gas limit for approval
       })
-    } catch (err) {
-      console.error("Error approving USDC:", err)
+
+      console.log("📤 Approval writeContract called - hash will appear in data property")
+    } catch (err: any) {
+      console.error("❌ Error approving USDC:", {
+        message: err?.message,
+        code: err?.code,
+        data: err?.data,
+        cause: err?.cause,
+        shortMessage: err?.shortMessage,
+      })
       throw err
     }
   }
@@ -54,7 +98,32 @@ export function useApproveUSDC() {
 // Hook for submitting invoice
 export function useSubmitInvoice() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000, // Poll every second instead of subscribing
+      retry: 3, // Retry 3 times on failure
+    },
+  })
+
+  // Debug logging
+  useEffect(() => {
+    if (hash || isPending || isConfirming || isSuccess || error) {
+      console.log("🔄 Invoice Submit status update:", {
+        hash: hash ? hash.substring(0, 10) + "..." : "none",
+        fullHash: hash,
+        isPending,
+        isConfirming,
+        isSuccess,
+        error: error?.message
+      })
+
+      if (hash && !isSuccess) {
+        console.log(`🔗 Check invoice on BaseScan: https://sepolia.basescan.org/tx/${hash}`)
+      }
+    }
+  }, [hash, isPending, isConfirming, isSuccess, error])
 
   const submit = (customerName: string, invoiceAmount: string, dueDate: bigint) => {
     // Validate customer name
@@ -75,14 +144,33 @@ export function useSubmitInvoice() {
 
     try {
       const parsedAmount = parseUnits(invoiceAmount, CONTRACTS.USDC.decimals)
+
+      console.log("📝 Submitting invoice commitment:", {
+        contract: CONTRACTS.ARUNA_CORE.address,
+        customerName,
+        invoiceAmount,
+        parsedAmount: parsedAmount.toString(),
+        dueDate: dueDate.toString(),
+        function: "submitInvoiceCommitment",
+      })
+
       writeContract({
         address: CONTRACTS.ARUNA_CORE.address as `0x${string}`,
         abi: ABIS.ARUNA_CORE,
         functionName: "submitInvoiceCommitment",
         args: [customerName, parsedAmount, dueDate],
+        gas: 500000n, // Set explicit gas limit
       })
-    } catch (err) {
-      console.error("Error submitting invoice:", err)
+
+      console.log("📤 Invoice submit writeContract called - waiting for hash")
+    } catch (err: any) {
+      console.error("❌ Error submitting invoice:", {
+        message: err?.message,
+        code: err?.code,
+        data: err?.data,
+        cause: err?.cause,
+        shortMessage: err?.shortMessage,
+      })
       throw err
     }
   }
@@ -126,7 +214,32 @@ export function useUserReputation(address?: `0x${string}`) {
 // Hook for depositing to Aave Vault
 export function useDepositToAaveVault() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000, // Poll every second instead of subscribing
+      retry: 3, // Retry 3 times on failure
+    },
+  })
+
+  // Debug logging
+  useEffect(() => {
+    if (hash || isPending || isConfirming || isSuccess || error) {
+      console.log("🔄 Aave Deposit status update:", {
+        hash: hash ? hash.substring(0, 10) + "..." : "none",
+        fullHash: hash,
+        isPending,
+        isConfirming,
+        isSuccess,
+        error: error?.message
+      })
+
+      if (hash && !isSuccess) {
+        console.log(`🔗 Check deposit on BaseScan: https://sepolia.basescan.org/tx/${hash}`)
+      }
+    }
+  }, [hash, isPending, isConfirming, isSuccess, error])
 
   const deposit = (amount: string, receiver: `0x${string}`) => {
     // Validate amount
@@ -142,14 +255,32 @@ export function useDepositToAaveVault() {
 
     try {
       const parsedAmount = parseUnits(amount, CONTRACTS.USDC.decimals)
+
+      console.log("💰 Depositing to Aave Vault:", {
+        contract: CONTRACTS.AAVE_VAULT.address,
+        amount,
+        parsedAmount: parsedAmount.toString(),
+        receiver,
+        function: "deposit",
+      })
+
       writeContract({
         address: CONTRACTS.AAVE_VAULT.address as `0x${string}`,
         abi: ABIS.AAVE_VAULT,
         functionName: "deposit",
         args: [parsedAmount, receiver],
+        gas: 500000n, // Set explicit gas limit
       })
-    } catch (err) {
-      console.error("Error depositing to Aave:", err)
+
+      console.log("📤 Deposit writeContract called - waiting for hash")
+    } catch (err: any) {
+      console.error("❌ Error depositing to Aave:", {
+        message: err?.message,
+        code: err?.code,
+        data: err?.data,
+        cause: err?.cause,
+        shortMessage: err?.shortMessage,
+      })
       throw err
     }
   }
@@ -167,7 +298,32 @@ export function useDepositToAaveVault() {
 // Hook for depositing to Morpho Vault
 export function useDepositToMorphoVault() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000, // Poll every second instead of subscribing
+      retry: 3, // Retry 3 times on failure
+    },
+  })
+
+  // Debug logging
+  useEffect(() => {
+    if (hash || isPending || isConfirming || isSuccess || error) {
+      console.log("🔄 Morpho Deposit status update:", {
+        hash: hash ? hash.substring(0, 10) + "..." : "none",
+        fullHash: hash,
+        isPending,
+        isConfirming,
+        isSuccess,
+        error: error?.message
+      })
+
+      if (hash && !isSuccess) {
+        console.log(`🔗 Check deposit on BaseScan: https://sepolia.basescan.org/tx/${hash}`)
+      }
+    }
+  }, [hash, isPending, isConfirming, isSuccess, error])
 
   const deposit = (amount: string, receiver: `0x${string}`) => {
     // Validate amount
@@ -183,14 +339,32 @@ export function useDepositToMorphoVault() {
 
     try {
       const parsedAmount = parseUnits(amount, CONTRACTS.USDC.decimals)
+
+      console.log("💰 Depositing to Morpho Vault:", {
+        contract: CONTRACTS.MORPHO_VAULT.address,
+        amount,
+        parsedAmount: parsedAmount.toString(),
+        receiver,
+        function: "deposit",
+      })
+
       writeContract({
         address: CONTRACTS.MORPHO_VAULT.address as `0x${string}`,
         abi: ABIS.MORPHO_VAULT,
         functionName: "deposit",
         args: [parsedAmount, receiver],
+        gas: 500000n, // Set explicit gas limit
       })
-    } catch (err) {
-      console.error("Error depositing to Morpho:", err)
+
+      console.log("📤 Deposit writeContract called - waiting for hash")
+    } catch (err: any) {
+      console.error("❌ Error depositing to Morpho:", {
+        message: err?.message,
+        code: err?.code,
+        data: err?.data,
+        cause: err?.cause,
+        shortMessage: err?.shortMessage,
+      })
       throw err
     }
   }
@@ -221,7 +395,14 @@ export function useVaultBalance(vaultAddress: `0x${string}`, userAddress?: `0x${
 // Hook for withdrawing from vault
 export function useWithdrawFromVault(isAave: boolean) {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000, // Poll every second instead of subscribing
+      retry: 3, // Retry 3 times on failure
+    },
+  })
 
   const withdraw = (amount: string, receiver: `0x${string}`, owner: `0x${string}`) => {
     const parsedAmount = parseUnits(amount, CONTRACTS.USDC.decimals)
@@ -267,7 +448,14 @@ export function useClaimableYield(address?: `0x${string}`) {
 // Hook for claiming yield
 export function useClaimYield() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000, // Poll every second instead of subscribing
+      retry: 3, // Retry 3 times on failure
+    },
+  })
 
   const claim = () => {
     writeContract({
@@ -353,7 +541,14 @@ export function useInvoiceDetails(tokenId?: bigint) {
 // Hook for settling invoice
 export function useSettleInvoice() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+    query: {
+      enabled: !!hash,
+      refetchInterval: 1000, // Poll every second instead of subscribing
+      retry: 3, // Retry 3 times on failure
+    },
+  })
 
   const settle = (tokenId: bigint) => {
     if (tokenId <= 0n) {

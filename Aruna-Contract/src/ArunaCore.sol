@@ -54,7 +54,7 @@ contract ArunaCore is ERC721, Ownable, ReentrancyGuard {
 
     // Limits
     uint256 public constant MAX_INVOICE_AMOUNT = 100000 * 1e6; // $100,000 USDC
-    uint256 public constant MIN_INVOICE_AMOUNT = 100 * 1e6; // $100 USDC
+    uint256 public constant MIN_INVOICE_AMOUNT = 1 * 1e6; // $1 USDC (lowered for testing)
     uint256 public maxGrantAmount = 3000 * 1e6; // $3,000 USDC max grant (3% of $100k)
 
     // Counters

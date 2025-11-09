@@ -1,164 +1,91 @@
-# Aruna
+# Aruna Protocol - Frontend
 
-Turn future invoice payments into sustainable public goods funding.
+> Turn invoice payments into sustainable public goods funding
 
-## Overview
+Aruna Protocol Frontend adalah antarmuka web untuk berinteraksi dengan Aruna smart contracts di Base Sepolia. Dibangun dengan Next.js 16, OnchainKit, dan Wagmi untuk pengalaman Web3 yang seamless.
 
-Aruna connects three key players:
-- **Businesses**: Get instant working capital (3% grant) without collateral
-- **Investors**: Earn yield on stablecoins while funding public goods
-- **Public Goods**: Receive sustainable funding from yield distribution
-
-## Features
-
-- Invoice commitment system with instant grants
-- Aave v3 and Morpho vault integration for optimized yields
-- Automatic public goods funding (25% of yield)
-- Mobile-responsive design for all users
-- Built on Base Sepolia with OnchainKit integration
-- Non-custodial smart contracts
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- MetaMask or compatible Web3 wallet
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-\`\`\`bash
-npm install
-\`\`\`
-
-3. Set up environment variables:
-\`\`\`bash
-cp .env.example .env.local
-\`\`\`
-
-4. Add your WalletConnect Project ID and contract addresses to `.env.local`
-
-5. Run the development server:
-\`\`\`bash
-npm run dev
-\`\`\`
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Usage
+## 🌟 Features
 
 ### For Businesses
-
-1. Connect your wallet
-2. Navigate to `/business`
-3. Click "Submit New Invoice"
-4. Enter invoice details (customer name, amount, due date)
-5. Deposit 10% collateral in USDC
-6. Receive 3% instant grant
-7. When paid, yield is distributed to public goods
+- **Invoice Financing**: Submit invoice commitments dan dapatkan 3% instant grant
+- **Low Collateral**: Hanya 10% collateral requirement (net 7% setelah grant)
+- **Reputation System**: Build reputation dengan settle invoices tepat waktu
+- **NFT Invoices**: Setiap invoice adalah ERC-721 NFT yang bisa ditransfer
 
 ### For Investors
+- **Dual Vault Options**:
+  - Aave v3 (6.5% APY) - Stable & proven
+  - Morpho (8.2% APY) - Optimized yields
+- **ERC-4626 Compliant**: Standard vault interface
+- **No Lock-up**: Withdraw kapan saja tanpa penalty
+- **Yield Sharing**: 70% untuk investor, 25% untuk public goods, 5% protocol fee
 
-1. Connect your wallet
-2. Navigate to `/investor`
-3. Click "Deposit to Vault"
-4. Choose Aave v3 or Morpho vault
-5. Select token (USDC, DAI, or USDT)
-6. Enter deposit amount
-7. Earn yield while supporting public goods
+### For Public Goods
+- **Automatic Funding**: 25% dari semua yield otomatis ke Octant v2
+- **Transparent**: Track semua donations dan impact
+- **Sustainable**: Ongoing funding dari invoice commitments
 
-### Track Impact
+## 🚀 Quick Start
 
-1. Navigate to `/public-goods`
-2. View total funding and projects supported
-3. See your contribution to public goods
+```bash
+# Install dependencies
+pnpm install
 
-## Smart Contracts
+# Run development server
+pnpm dev
 
-The protocol uses:
-- **Aave v3**: For stable yield generation
-- **Morpho**: For optimized peer-to-peer yields
-- **Octant**: For automatic public goods distribution
-- **ERC-721**: For invoice commitment NFTs
+# Build for production
+pnpm build
+pnpm start
+```
 
-## Architecture
+Open [http://localhost:3000](http://localhost:3000)
 
-\`\`\`
-Aruna Protocol
-├── Invoice Commitment System
-│   ├── Submit invoice details
-│   ├── Mint NFT commitment
-│   └── Receive instant grant
-├── Vault System
-│   ├── Aave v3 Vault
-│   ├── Morpho Vault
-│   └── Yield Distribution
-└── Public Goods Integration
-    ├── Octant Allocation
-    └── Impact Tracking
-\`\`\`
+## 📋 Prerequisites
 
-## Configuration
+- **Node.js** 18+
+- **pnpm** 10.20.0+
+- **MetaMask** atau compatible wallet
+- **Base Sepolia ETH** ([get from faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet))
+- **Base Sepolia USDC** ([get from Circle](https://faucet.circle.com/))
 
-Edit `lib/config.ts` to customize:
-- Grant percentage (default: 3%)
-- Collateral requirement (default: 10%)
-- Public goods allocation (default: 25%)
-- Protocol fee (default: 5%)
+## 🔧 Configuration
 
-## Deployment
+Environment variables sudah dikonfigurasi di `.env.local`:
 
-### Deploy to Vercel
+```env
+# Network
+NEXT_PUBLIC_CHAIN_ID=84532
+NEXT_PUBLIC_BASE_SEPOLIA_RPC=https://sepolia.base.org
 
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
+# OnchainKit (sudah configured)
+NEXT_PUBLIC_ONCHAINKIT_API_KEY=eZW3b3iiGj9JfdK6Uui9Hize9Zd3ldoV
 
-\`\`\`bash
-vercel deploy
-\`\`\`
+# Deployed Contracts (Base Sepolia)
+NEXT_PUBLIC_ARUNA_CORE=0xE60dcA6869F072413557769bDFd4e30ceFa6997f
+NEXT_PUBLIC_AAVE_VAULT=0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905
+NEXT_PUBLIC_MORPHO_VAULT=0x16dea7eE228c0781938E6869c07ceb2EEA7bd564
+NEXT_PUBLIC_YIELD_ROUTER=0x124d8F59748860cdD851fB176c7630dD71016e89
+NEXT_PUBLIC_OCTANT_MODULE=0xEDc5CeE824215cbeEBC73e508558a955cdD75F00
+```
 
-## Development
+**Semua contract addresses sudah deployed dan verified!** ✅
 
-### Build
+## 🔗 Deployed Contracts
 
-\`\`\`bash
-npm run build
-\`\`\`
+| Contract | Address | Explorer |
+|----------|---------|----------|
+| ArunaCore | `0xE60dcA6869F072413557769bDFd4e30ceFa6997f` | [View →](https://sepolia.basescan.org/address/0xE60dcA6869F072413557769bDFd4e30ceFa6997f) |
+| AaveVaultAdapter | `0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905` | [View →](https://sepolia.basescan.org/address/0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905) |
+| MorphoVaultAdapter | `0x16dea7eE228c0781938E6869c07ceb2EEA7bd564` | [View →](https://sepolia.basescan.org/address/0x16dea7eE228c0781938E6869c07ceb2EEA7bd564) |
+| YieldRouter | `0x124d8F59748860cdD851fB176c7630dD71016e89` | [View →](https://sepolia.basescan.org/address/0x124d8F59748860cdD851fB176c7630dD71016e89) |
 
-### Lint
+## 📚 Documentation
 
-\`\`\`bash
-npm run lint
-\`\`\`
+- [Setup Guide](./SETUP_GUIDE.md) - Complete setup instructions with testing guide
+- [Integration Guide](../INTEGRATION_GUIDE.md) - Contract integration details
+- [Smart Contracts](../Aruna-Contract/README.md) - Contract documentation
 
-## Security
+---
 
-- All smart contracts are non-custodial
-- Funds held in Aave/Morpho vaults
-- Row-level security for user data
-- No private keys stored on servers
-
-## Support
-
-For issues or questions:
-- Open an issue on GitHub
-- Check documentation at `/docs`
-- Visit our website for more info
-
-## License
-
-MIT
-
-## Acknowledgments
-
-Built with:
-- Next.js 16
-- Tailwind CSS
-- Recharts
-- RainbowKit & Wagmi
-- Ethers.js
+Built with ❤️ for Octant DeFi Hackathon 2025

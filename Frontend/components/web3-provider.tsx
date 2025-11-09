@@ -20,15 +20,24 @@ const config = createConfig({
     metaMask(),
     walletConnect({
       projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
+      showQrModal: true,
     }),
   ],
   transports: {
     [baseSepolia.id]: http(),
   },
   ssr: true,
+  multiInjectedProviderDiscovery: false, // Prevent multiple provider conflicts
 })
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Prevent unnecessary refetches
+      retry: 1, // Limit retries to prevent repeated connection attempts
+    },
+  },
+})
 
 export function Web3Provider({ children }: { children: ReactNode }) {
   return (

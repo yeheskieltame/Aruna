@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,58 +17,151 @@ import {
   formatUSDC,
 } from "@/hooks/useContracts"
 import { CONTRACTS } from "@/lib/contracts"
+import { TransactionModal, VaultDepositSuccessDetails } from "@/components/transaction-modal"
+import { useApprovalTransaction } from "@/hooks/useTransactionModal"
 
-export default function VaultDeposit() {
+interface VaultDepositProps {
+  onSuccess?: () => void
+}
+
+export default function VaultDeposit({ onSuccess }: VaultDepositProps) {
   const { address } = useAccount()
   const [vaultType, setVaultType] = useState("aave")
   const [amount, setAmount] = useState("")
   const [tokenType, setTokenType] = useState("usdc")
   const [error, setError] = useState("")
-  const [step, setStep] = useState<"input" | "approve" | "deposit">("input")
+  const hasDepositedRef = useRef(false)
+
+  const modal = useApprovalTransaction()
 
   // Fetch USDC balance
   const { data: usdcBalance } = useUSDCBalance(address)
   const usdcBalanceFormatted = usdcBalance ? formatUSDC(usdcBalance as bigint) : "0"
 
   // Hooks for transactions
-  const { approve, isPending: isApproving, isSuccess: isApproved, error: approveError } = useApproveUSDC()
-  const { deposit: depositAave, isPending: isDepositingAave, isSuccess: isDepositedAave, error: depositAaveError } = useDepositToAaveVault()
-  const { deposit: depositMorpho, isPending: isDepositingMorpho, isSuccess: isDepositedMorpho, error: depositMorphoError } = useDepositToMorphoVault()
+  const { approve, isPending: isApproving, isSuccess: isApproved, hash: approvalHash, error: approveError } = useApproveUSDC()
+  const { deposit: depositAave, isPending: isDepositingAave, isSuccess: isDepositedAave, hash: depositAaveHash, error: depositAaveError } = useDepositToAaveVault()
+  const { deposit: depositMorpho, isPending: isDepositingMorpho, isSuccess: isDepositedMorpho, hash: depositMorphoHash, error: depositMorphoError } = useDepositToMorphoVault()
 
-  // Handle approval completion
+  // Handle approval success
   useEffect(() => {
-    if (isApproved && step === "approve") {
-      setStep("deposit")
-    }
-  }, [isApproved, step])
+    console.log("👀 Watching approval state:", {
+      isApproved,
+      approvalHash,
+      isApproving,
+      approveError: approveError?.message,
+      hasDeposited: hasDepositedRef.current
+    })
 
-  // Handle deposit completion
-  useEffect(() => {
-    if ((isDepositedAave || isDepositedMorpho) && step === "deposit") {
-      setAmount("")
-      setStep("input")
+    if (isApproved && approvalHash && !hasDepositedRef.current) {
+      console.log("✅ USDC Approval confirmed:", { hash: approvalHash })
+      modal.approvalSuccess()
     }
-  }, [isDepositedAave, isDepositedMorpho, step])
+  }, [isApproved, approvalHash, isApproving, approveError])
+
+  // Auto-deposit after approval
+  useEffect(() => {
+    console.log("🔍 Checking auto-deposit:", {
+      approvalCompleted: modal.approvalCompleted,
+      isDepositingAave,
+      isDepositingMorpho,
+      isDepositedAave,
+      isDepositedMorpho,
+      address,
+      amount,
+      vaultType,
+      hasDeposited: hasDepositedRef.current,
+    })
+
+    if (modal.approvalCompleted && !isDepositingAave && !isDepositingMorpho && !isDepositedAave && !isDepositedMorpho && !hasDepositedRef.current && address && amount) {
+      const amountNum = Number.parseFloat(amount)
+      console.log("🚀 Auto-depositing to vault:", { vaultType, amount, amountNum })
+
+      if (amountNum > 0) {
+        hasDepositedRef.current = true
+        modal.startSubmit()
+
+        try {
+          if (vaultType === "aave") {
+            console.log("📝 Calling depositAave:", { amount, receiver: address })
+            depositAave(amount, address)
+          } else {
+            console.log("📝 Calling depositMorpho:", { amount, receiver: address })
+            depositMorpho(amount, address)
+          }
+        } catch (err: any) {
+          console.error("❌ Error in auto-deposit:", err)
+          modal.transactionError(err)
+          hasDepositedRef.current = false
+        }
+      }
+    }
+  }, [modal.approvalCompleted, isDepositingAave, isDepositingMorpho, isDepositedAave, isDepositedMorpho, address, amount, vaultType])
+
+  // Handle deposit pending
+  useEffect(() => {
+    const hash = depositAaveHash || depositMorphoHash
+    if ((isDepositingAave || isDepositingMorpho) && hash) {
+      modal.submitPending(hash)
+    }
+  }, [isDepositingAave, isDepositingMorpho, depositAaveHash, depositMorphoHash])
+
+  // Detect if transaction was rejected (isPending went from true to false without hash)
+  useEffect(() => {
+    const wasDepositing = hasDepositedRef.current
+    const notDepositingAnymore = !isDepositingAave && !isDepositingMorpho
+    const noHash = !depositAaveHash && !depositMorphoHash
+    const noSuccess = !isDepositedAave && !isDepositedMorpho
+
+    if (wasDepositing && notDepositingAnymore && noHash && noSuccess && modal.step === "confirming") {
+      console.log("⚠️ Deposit transaction likely rejected or failed")
+      modal.transactionError("Transaction was rejected or failed to send. Please try again.")
+      hasDepositedRef.current = false
+    }
+  }, [isDepositingAave, isDepositingMorpho, depositAaveHash, depositMorphoHash, isDepositedAave, isDepositedMorpho, modal.step])
+
+  // Handle deposit success
+  useEffect(() => {
+    const hash = depositAaveHash || depositMorphoHash
+    if ((isDepositedAave || isDepositedMorpho) && hash) {
+      modal.submitSuccess(hash)
+      setTimeout(() => {
+        setAmount("")
+        hasDepositedRef.current = false // Reset for next transaction
+        if (onSuccess) onSuccess()
+      }, 1000)
+    }
+  }, [isDepositedAave, isDepositedMorpho, depositAaveHash, depositMorphoHash, onSuccess])
 
   // Handle errors
   useEffect(() => {
     if (approveError) {
+      modal.transactionError(approveError)
       setError(approveError.message)
-      setStep("input")
+      hasDepositedRef.current = false // Reset on error
     }
+  }, [approveError])
+
+  useEffect(() => {
     if (depositAaveError) {
+      modal.transactionError(depositAaveError)
       setError(depositAaveError.message)
-      setStep("input")
+      hasDepositedRef.current = false // Reset on error
     }
+  }, [depositAaveError])
+
+  useEffect(() => {
     if (depositMorphoError) {
+      modal.transactionError(depositMorphoError)
       setError(depositMorphoError.message)
-      setStep("input")
+      hasDepositedRef.current = false // Reset on error
     }
-  }, [approveError, depositAaveError, depositMorphoError])
+  }, [depositMorphoError])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    hasDepositedRef.current = false // Reset for new transaction
 
     if (!address) {
       setError("Please connect your wallet")
@@ -95,35 +188,80 @@ export default function VaultDeposit() {
       return
     }
 
-    // Start approval process
-    setStep("approve")
-    const vaultAddress = vaultType === "aave" ? CONTRACTS.AAVE_VAULT.address : CONTRACTS.MORPHO_VAULT.address
-    approve(vaultAddress, amount)
-  }
+    try {
+      // Start approval process
+      console.log("🚀 Starting approval process:", {
+        vaultType,
+        amount,
+        address,
+        vaultAddress: vaultType === "aave" ? CONTRACTS.AAVE_VAULT.address : CONTRACTS.MORPHO_VAULT.address
+      })
 
-  // Automatically deposit after approval
-  useEffect(() => {
-    if (step === "deposit" && !isDepositingAave && !isDepositingMorpho && !isDepositedAave && !isDepositedMorpho && address && amount) {
-      const amountNum = Number.parseFloat(amount)
-      // Safety check before depositing
-      if (amountNum > 0) {
-        if (vaultType === "aave") {
-          depositAave(amount, address)
-        } else {
-          depositMorpho(amount, address)
-        }
+      modal.startApproval()
+      const vaultAddress = vaultType === "aave" ? CONTRACTS.AAVE_VAULT.address : CONTRACTS.MORPHO_VAULT.address
+
+      approve(vaultAddress, amount)
+
+      console.log("✅ Approve function called - waiting for hash in useEffect")
+    } catch (err: any) {
+      console.error("❌ Error in handleSubmit:", {
+        message: err?.message,
+        code: err?.code,
+        name: err?.name,
+        stack: err?.stack
+      })
+
+      // Handle user rejection
+      if (err?.message?.includes("User rejected") || err?.code === 4001) {
+        setError("Transaction was rejected. Please try again.")
+        modal.closeModal()
       } else {
-        setError("Invalid amount")
-        setStep("input")
+        setError(err?.message || "Transaction failed. Please try again.")
+        modal.transactionError(err)
       }
     }
-  }, [step])
+  }
+
+  const depositAmount = Number.parseFloat(amount) || 0
+  const apy = vaultType === "aave" ? 0.065 : 0.082
+  const estimatedYield = depositAmount * apy
+  const vaultName = vaultType === "aave" ? "Aave v3" : "Morpho"
 
   return (
-    <Card className="p-6 sm:p-8 max-w-2xl">
-      <h2 className="text-2xl font-bold mb-6">Deposit to Vault</h2>
+    <>
+      <TransactionModal
+        isOpen={modal.isOpen}
+        onClose={modal.closeModal}
+        step={modal.step}
+        txHash={modal.txHash}
+        error={modal.error}
+        title={`Deposit to ${vaultName} Vault`}
+        approvalMessage={`Approve ${depositAmount.toFixed(2)} USDC for ${vaultName} vault`}
+        confirmMessage="Depositing your USDC to the vault..."
+        pendingMessage="Your deposit is being processed. You'll receive vault shares shortly!"
+        successMessage={`Successfully deposited to ${vaultName} vault!`}
+        successDetails={
+          amount && (
+            <VaultDepositSuccessDetails
+              vaultName={vaultName}
+              depositAmount={depositAmount}
+              sharesReceived={(depositAmount * 1).toFixed(6)}
+              apy={apy}
+              estimatedYield={estimatedYield}
+            />
+          )
+        }
+        onSuccess={() => {
+          modal.closeModal()
+        }}
+      />
 
-      {error && <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg text-sm">{error}</div>}
+      <Card className="p-6 sm:p-8 max-w-2xl">
+        <h2 className="text-2xl font-bold mb-6">Deposit to Vault</h2>
+
+        {error && !modal.isOpen && (
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg text-sm">{error}</div>
+        )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Vault Selection */}
@@ -216,13 +354,14 @@ export default function VaultDeposit() {
           size="lg"
           disabled={!amount || isApproving || isDepositingAave || isDepositingMorpho || !address}
         >
-          {step === "approve" && isApproving
+          {isApproving
             ? "Approving USDC..."
-            : step === "deposit" && (isDepositingAave || isDepositingMorpho)
+            : isDepositingAave || isDepositingMorpho
               ? "Depositing..."
-              : `Deposit to ${vaultType === "aave" ? "Aave" : "Morpho"} Vault`}
+              : `Deposit to ${vaultName} Vault`}
         </Button>
       </form>
     </Card>
+    </>
   )
 }

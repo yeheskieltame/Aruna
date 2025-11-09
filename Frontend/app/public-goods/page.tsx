@@ -6,7 +6,7 @@ import PublicGoodsTracker from "@/components/public-goods-tracker"
 export default function PublicGoodsPage() {
   return (
     <main className="min-h-screen bg-background">
-      <Navigation isConnected={true} />
+      <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="mb-8">

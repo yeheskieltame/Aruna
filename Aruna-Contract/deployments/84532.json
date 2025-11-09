@@ -1,64 +1,12 @@
 {
+  "ArunaCore": "0xE60dcA6869F072413557769bDFd4e30ceFa6997f",
+  "aaveVault": "0xCE62F26dCAc5Cfc9C1ac03888Dc6D4D1e2e47905",
   "chainId": 84532,
-  "network": "Base Sepolia Testnet",
-  "deploymentTime": "2024-11-08T00:00:00Z",
-  "deployer": "0x77c4a1cD22005b67Eb9CcEaE7E9577188d7Bca82",
+  "mockOctant": "0x480d28E02b449086efA3f01E2EdA4A4EAE99C3e6",
+  "mockMetaMorpho": "0x7deB84aAe25A2168782E6c8C0CF30714cbaaA025",
+  "morphoVault": "0x16dea7eE228c0781938E6869c07ceb2EEA7bd564",
+  "octantModule": "0xEDc5CeE824215cbeEBC73e508558a955cdD75F00",
   "owner": "0x77c4a1cD22005b67Eb9CcEaE7E9577188d7Bca82",
-  "protocolTreasury": "0x77c4a1cD22005b67Eb9CcEaE7E9577188d7Bca82",
-  "verified": true,
-  "contracts": {
-    "ArunaCore": {
-      "address": "0x5ee04F6377e03b47F5e932968e87ad5599664Cf2",
-      "explorer": "https://sepolia.basescan.org/address/0x5ee04F6377e03b47F5e932968e87ad5599664Cf2"
-    },
-    "AaveVaultAdapter": {
-      "address": "0x8E9F6B3230800B781e461fce5F7F118152FeD969",
-      "explorer": "https://sepolia.basescan.org/address/0x8E9F6B3230800B781e461fce5F7F118152FeD969",
-      "txHash": "0xf7d4f554bd735a80846e97f361002cc79059ee6cdab149796d25fdc88fa73dc8"
-    },
-    "MorphoVaultAdapter": {
-      "address": "0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d",
-      "explorer": "https://sepolia.basescan.org/address/0xc4388Fe5A3057eE1fc342a8018015f32f6aF6A7d"
-    },
-    "YieldRouter": {
-      "address": "0x9721ee37de0F289A99f8EA2585293575AE2654CC",
-      "explorer": "https://sepolia.basescan.org/address/0x9721ee37de0F289A99f8EA2585293575AE2654CC",
-      "txHash": "0x7e7b0071b9fd12ad3625c8ef1292855c8c8ca5177cdaa8357946b129dbc4edf6"
-    },
-    "OctantDonationModule": {
-      "address": "0xB745282F0FCe7a669F9EbD50B403e895090b1b24",
-      "explorer": "https://sepolia.basescan.org/address/0xB745282F0FCe7a669F9EbD50B403e895090b1b24",
-      "txHash": "0x7ff1f3c7eb9dd2eecf435c48879c8dafd11975079230e5de4c6721871f0f56c5"
-    },
-    "MockOctantDeposits": {
-      "address": "0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23",
-      "explorer": "https://sepolia.basescan.org/address/0xd4d4F246DCAf4b2822E0D74Ac30B06771Ee37B23",
-      "txHash": "0x91f215d5e3f5868e5983de60e652023f72d487b27aa1dcba431b2f54e811bf68",
-      "note": "Testnet Only - Mock Contract"
-    },
-    "MockMetaMorpho": {
-      "address": "0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19",
-      "explorer": "https://sepolia.basescan.org/address/0x9D831F7d7BA69358c8A1A44Ea509C53372D9Fd19",
-      "txHash": "0x49fb31a2b02b19f097b4aff7d77dbd5b83970133509068ffb4a604de71e4ad41",
-      "note": "Testnet Only - Mock Contract"
-    }
-  },
-  "externalContracts": {
-    "USDC": {
-      "address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "AavePool": {
-      "address": "0x07eA79F68B2B3df564D0A34F8e19D9B1e339814b",
-      "protocol": "Aave v3"
-    },
-    "AaveAToken": {
-      "address": "0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB",
-      "symbol": "aUSDC",
-      "protocol": "Aave v3"
-    }
-  },
-  "gasUsed": "14937670",
-  "estimatedCost": "0.00001493940276972 ETH"
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "yieldRouter": "0x124d8F59748860cdD851fB176c7630dD71016e89"
 }
